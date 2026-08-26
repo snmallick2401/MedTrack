@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.medtrack.inventory.service.FefoAllocationEngineTest" time="0.197" tests="1" errors="0" skipped="0" failures="0" flakes="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.medtrack.transfer.entity.TransferStateMachineTest" time="0.003" tests="2" errors="0" skipped="0" failures="0" flakes="0">
   <properties>
     <property name="java.specification.version" value="25"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -11,8 +11,10 @@
     <property name="user.variant" value=""/>
     <property name="java.vendor.url" value="https://java.oracle.com/"/>
     <property name="user.timezone" value="Asia/Calcutta"/>
+    <property name="org.jboss.logging.provider" value="slf4j"/>
     <property name="os.name" value="Windows 11"/>
     <property name="java.vm.specification.version" value="25"/>
+    <property name="APPLICATION_NAME" value="medtrack"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="GB"/>
     <property name="sun.boot.library.path" value="C:\Dev\Tools\jdk-25\jdk-25.0.4.1\bin"/>
@@ -31,8 +33,11 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="FILE_LOG_CHARSET" value="UTF-8"/>
+    <property name="java.awt.headless" value="true"/>
     <property name="surefire.real.class.path" value="C:\Users\S N Mallick\AppData\Local\Temp\surefire13500279686376236578\surefirebooter-20260827034219244_3.jar"/>
     <property name="user.script" value=""/>
+    <property name="polyglot.engine.WarnInterpreterOnly" value="false"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="25.0.4.1+1-LTS-5"/>
     <property name="user.name" value="S N Mallick"/>
@@ -45,11 +50,14 @@
     <property name="localRepository" value="C:\Users\S N Mallick\.m2\repository"/>
     <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
     <property name="java.io.tmpdir" value="C:\Users\SNMALL~1\AppData\Local\Temp\"/>
+    <property name="com.zaxxer.hikari.pool_number" value="1"/>
     <property name="java.version" value="25.0.4.1"/>
     <property name="user.dir" value="C:\Dev\Projects\Java\MedTrack\backend"/>
     <property name="os.arch" value="amd64"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="PID" value="27728"/>
     <property name="sun.os.patch.level" value=""/>
+    <property name="CONSOLE_LOG_CHARSET" value="UTF-8"/>
     <property name="native.encoding" value="Cp1252"/>
     <property name="java.library.path" value="C:\Dev\Tools\jdk-25\jdk-25.0.4.1\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Dev\Tools\apache-maven-3.9.16\bin;C:\Dev\Tools\jdk-25\jdk-25.0.4.1\bin;C:\Program Files\WindowsApps\Microsoft.PowerShell_7.6.5.0_x64__8wekyb3d8bbwe;C:/Users/S N Mallick/.gemini/antigravity/bin;C:\Users\S N Mallick\AppData\Roaming\Antigravity\bin;C:\Dev\Tools\ImageMagick;C:\Users\S N Mallick\AppData\Roaming\Python\Python314\Scripts;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Apps\Git\cmd;C:\Apps\Microsoft VS Code\bin;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Program Files\CMake\bin;C:\Dev\Tools\vcpkg;C:\Program Files\NVIDIA Corporation\Nsight Compute 2025.2.0\;C:\Program Files\NVIDIA Corporation\NVIDIA App\NvDLISR;C:\Dev\Tools\llama.cpp\build\bin\Release;C:\xampp\php;C:\ProgramData\ComposerSetup\bin;C:\Dev\Tools\ffmpeg\bin;C:\Dev\Tools\ExifTool;C:\Dev\Tools\sqlite;C:\Users\S N Mallick\AppData\Local\agy\bin;C:\Users\S N Mallick\AppData\Local\Programs\Python\Python311\Scripts\;C:\Users\S N Mallick\AppData\Local\Programs\Python\Python311\;C:\Users\S N Mallick\AppData\Local\Microsoft\WindowsApps;C:\Apps\VSCode\bin;C:\Users\S N Mallick\AppData\Roaming\npm;C:\Users\S N Mallick\AppData\Local\Programs\Ollama;C:\Users\S N Mallick\.lmstudio\bin;C:\Users\S N Mallick\AppData\Roaming\Composer\vendor\bin;C:\Users\S N Mallick\AppData\Local\GitHubDesktop\bin;."/>
     <property name="java.vm.info" value="mixed mode, sharing"/>
@@ -59,6 +67,8 @@
     <property name="stdin.encoding" value="Cp1252"/>
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="69.0"/>
+    <property name="LOGGED_APPLICATION_NAME" value="[medtrack] "/>
   </properties>
-  <testcase name="ac02_allocatesEarliestExpiryFirst" classname="com.medtrack.inventory.service.FefoAllocationEngineTest" time="0.196"/>
+  <testcase name="rejectsStateJump" classname="com.medtrack.transfer.entity.TransferStateMachineTest" time="0.001"/>
+  <testcase name="permitsCanonicalStep" classname="com.medtrack.transfer.entity.TransferStateMachineTest" time="0.001"/>
 </testsuite>

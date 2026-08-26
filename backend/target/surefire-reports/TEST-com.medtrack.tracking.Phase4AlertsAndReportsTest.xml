@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.medtrack.inventory.service.FefoAllocationEngineTest" time="0.197" tests="1" errors="0" skipped="0" failures="0" flakes="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.medtrack.tracking.Phase4AlertsAndReportsTest" time="8.211" tests="5" errors="0" skipped="0" failures="0" flakes="0">
   <properties>
     <property name="java.specification.version" value="25"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -11,8 +11,10 @@
     <property name="user.variant" value=""/>
     <property name="java.vendor.url" value="https://java.oracle.com/"/>
     <property name="user.timezone" value="Asia/Calcutta"/>
+    <property name="org.jboss.logging.provider" value="slf4j"/>
     <property name="os.name" value="Windows 11"/>
     <property name="java.vm.specification.version" value="25"/>
+    <property name="APPLICATION_NAME" value="medtrack"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="GB"/>
     <property name="sun.boot.library.path" value="C:\Dev\Tools\jdk-25\jdk-25.0.4.1\bin"/>
@@ -31,8 +33,11 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="FILE_LOG_CHARSET" value="UTF-8"/>
+    <property name="java.awt.headless" value="true"/>
     <property name="surefire.real.class.path" value="C:\Users\S N Mallick\AppData\Local\Temp\surefire13500279686376236578\surefirebooter-20260827034219244_3.jar"/>
     <property name="user.script" value=""/>
+    <property name="polyglot.engine.WarnInterpreterOnly" value="false"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="25.0.4.1+1-LTS-5"/>
     <property name="user.name" value="S N Mallick"/>
@@ -45,11 +50,14 @@
     <property name="localRepository" value="C:\Users\S N Mallick\.m2\repository"/>
     <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
     <property name="java.io.tmpdir" value="C:\Users\SNMALL~1\AppData\Local\Temp\"/>
+    <property name="com.zaxxer.hikari.pool_number" value="1"/>
     <property name="java.version" value="25.0.4.1"/>
     <property name="user.dir" value="C:\Dev\Projects\Java\MedTrack\backend"/>
     <property name="os.arch" value="amd64"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="PID" value="27728"/>
     <property name="sun.os.patch.level" value=""/>
+    <property name="CONSOLE_LOG_CHARSET" value="UTF-8"/>
     <property name="native.encoding" value="Cp1252"/>
     <property name="java.library.path" value="C:\Dev\Tools\jdk-25\jdk-25.0.4.1\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Dev\Tools\apache-maven-3.9.16\bin;C:\Dev\Tools\jdk-25\jdk-25.0.4.1\bin;C:\Program Files\WindowsApps\Microsoft.PowerShell_7.6.5.0_x64__8wekyb3d8bbwe;C:/Users/S N Mallick/.gemini/antigravity/bin;C:\Users\S N Mallick\AppData\Roaming\Antigravity\bin;C:\Dev\Tools\ImageMagick;C:\Users\S N Mallick\AppData\Roaming\Python\Python314\Scripts;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Apps\Git\cmd;C:\Apps\Microsoft VS Code\bin;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Program Files\CMake\bin;C:\Dev\Tools\vcpkg;C:\Program Files\NVIDIA Corporation\Nsight Compute 2025.2.0\;C:\Program Files\NVIDIA Corporation\NVIDIA App\NvDLISR;C:\Dev\Tools\llama.cpp\build\bin\Release;C:\xampp\php;C:\ProgramData\ComposerSetup\bin;C:\Dev\Tools\ffmpeg\bin;C:\Dev\Tools\ExifTool;C:\Dev\Tools\sqlite;C:\Users\S N Mallick\AppData\Local\agy\bin;C:\Users\S N Mallick\AppData\Local\Programs\Python\Python311\Scripts\;C:\Users\S N Mallick\AppData\Local\Programs\Python\Python311\;C:\Users\S N Mallick\AppData\Local\Microsoft\WindowsApps;C:\Apps\VSCode\bin;C:\Users\S N Mallick\AppData\Roaming\npm;C:\Users\S N Mallick\AppData\Local\Programs\Ollama;C:\Users\S N Mallick\.lmstudio\bin;C:\Users\S N Mallick\AppData\Roaming\Composer\vendor\bin;C:\Users\S N Mallick\AppData\Local\GitHubDesktop\bin;."/>
     <property name="java.vm.info" value="mixed mode, sharing"/>
@@ -59,6 +67,65 @@
     <property name="stdin.encoding" value="Cp1252"/>
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="69.0"/>
+    <property name="LOGGED_APPLICATION_NAME" value="[medtrack] "/>
   </properties>
-  <testcase name="ac02_allocatesEarliestExpiryFirst" classname="com.medtrack.inventory.service.FefoAllocationEngineTest" time="0.196"/>
+  <testcase name="testNotificationReadWorkflow" classname="com.medtrack.tracking.Phase4AlertsAndReportsTest" time="0.298">
+    <system-out><![CDATA[03:42:20.736 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.medtrack.tracking.Phase4AlertsAndReportsTest]: Phase4AlertsAndReportsTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+03:42:20.841 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.medtrack.MedTrackApplication for test class com.medtrack.tracking.Phase4AlertsAndReportsTest
+03:42:20.902 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.medtrack.tracking.Phase4AlertsAndReportsTest]: Phase4AlertsAndReportsTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+03:42:20.904 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.medtrack.MedTrackApplication for test class com.medtrack.tracking.Phase4AlertsAndReportsTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.1)
+
+2026-08-27T03:42:21.166+05:30 INFO  [] [] [] c.m.t.Phase4AlertsAndReportsTest - Starting Phase4AlertsAndReportsTest using Java 25.0.4.1 with PID 27728 (started by S N Mallick in C:\Dev\Projects\Java\MedTrack\backend)
+2026-08-27T03:42:21.167+05:30 INFO  [] [] [] c.m.t.Phase4AlertsAndReportsTest - No active profile set, falling back to 1 default profile: "default"
+2026-08-27T03:42:21.866+05:30 INFO  [] [] [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-27T03:42:21.929+05:30 INFO  [] [] [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 58 ms. Found 20 JPA repository interfaces.
+2026-08-27T03:42:22.601+05:30 INFO  [] [] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-08-27T03:42:22.731+05:30 INFO  [] [] [] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@5e1e19af
+2026-08-27T03:42:22.732+05:30 INFO  [] [] [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-08-27T03:42:22.749+05:30 INFO  [] [] [] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://localhost:5432/medtrack (PostgreSQL 18.6)
+2026-08-27T03:42:22.822+05:30 INFO  [] [] [] o.f.core.internal.command.DbValidate - Successfully validated 7 migrations (execution time 00:00.036s)
+2026-08-27T03:42:22.860+05:30 INFO  [] [] [] o.f.core.internal.command.DbMigrate - Current version of schema "public": 7
+2026-08-27T03:42:22.863+05:30 INFO  [] [] [] o.f.core.internal.command.DbMigrate - Schema "public" is up to date. No migration necessary.
+2026-08-27T03:42:22.990+05:30 INFO  [] [] [] org.hibernate.orm.jpa - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-08-27T03:42:23.041+05:30 INFO  [] [] [] org.hibernate.orm.core - HHH000001: Hibernate ORM core version 7.4.5.Final
+2026-08-27T03:42:23.300+05:30 INFO  [] [] [] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-27T03:42:23.370+05:30 INFO  [] [] [] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/medtrack]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: medtrack/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-08-27T03:42:24.739+05:30 INFO  [] [] [] org.hibernate.orm.core - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-27T03:42:24.798+05:30 INFO  [] [] [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-27T03:42:24.891+05:30 INFO  [] [] [] o.s.d.j.r.q.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-08-27T03:42:26.584+05:30 WARN  [] [] [] o.s.b.s.a.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: 8c1935de-b515-43c6-adc6-ca3b62ee7de5
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-08-27T03:42:26.590+05:30 INFO  [] [] [] o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-08-27T03:42:26.953+05:30 INFO  [] [] [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint beneath base path '/actuator'
+2026-08-27T03:42:27.354+05:30 INFO  [] [] [] c.m.t.Phase4AlertsAndReportsTest - Started Phase4AlertsAndReportsTest in 6.414 seconds (process running for 7.983)
+]]></system-out>
+  </testcase>
+  <testcase name="testShipmentDelayAlertEngineAndDeduplication" classname="com.medtrack.tracking.Phase4AlertsAndReportsTest" time="0.626"/>
+  <testcase name="testQrCodeGenerationAndDecodingContract" classname="com.medtrack.tracking.Phase4AlertsAndReportsTest" time="0.173"/>
+  <testcase name="testExpiryAlertEngineAndDeduplication" classname="com.medtrack.tracking.Phase4AlertsAndReportsTest" time="0.177"/>
+  <testcase name="testExpiryReportAndCsvExport" classname="com.medtrack.tracking.Phase4AlertsAndReportsTest" time="0.103"/>
 </testsuite>
