@@ -1,0 +1,1 @@
+import type{AxiosError}from"axios";import type{ProblemDetail}from"../types/api";export const errorMessage=(error:unknown)=>{const p=(error as AxiosError<ProblemDetail>).response?.data;return p?.detail??"We could not complete that request. Please try again."};

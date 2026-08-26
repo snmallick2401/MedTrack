@@ -1,0 +1,1 @@
+export function PlaceholderPage({title}:{title:string}){return <section><h1 className="text-2xl font-semibold text-ink">{title}</h1><p className="mt-3 text-muted">This screen is ready to connect to the corresponding backend endpoint.</p></section>}

@@ -259,6 +259,144 @@ paths:
         '201':
           description: Milestone logged
 
+  /notifications:
+    get:
+      summary: Get unread notifications for current user/assigned warehouse
+      tags: [Notifications]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of unread notifications
+
+  /notifications/{id}/read:
+    post:
+      summary: Mark notification as read
+      tags: [Notifications]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Notification marked as read
+
+  /notifications/evaluate:
+    post:
+      summary: Trigger scheduled alert evaluation scan (Expiry, Delay, Low Stock)
+      tags: [Notifications]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Alert evaluation complete
+
+  /reports/inventory:
+    get:
+      summary: Export full inventory balance report as CSV
+      tags: [Reports]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Inventory CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /reports/expiry:
+    get:
+      summary: Export batches near expiry report as CSV
+      tags: [Reports]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 90
+      responses:
+        '200':
+          description: Expiry CSV report
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /reports/expiry/data:
+    get:
+      summary: Query near-expiry batch data as JSON
+      tags: [Reports]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 90
+      responses:
+        '200':
+          description: Expiry batch records
+
+  /batches/{batchId}/barcode/qr:
+    get:
+      summary: Get 2D QR Code data URI and JSON payload contract for batch
+      tags: [Barcodes]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: QR Code data URI and payload
+
+  /batches/{batchId}/barcode/code128:
+    get:
+      summary: Get 1D Code-128 Barcode data URI for batch
+      tags: [Barcodes]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Code-128 barcode data URI
+
+  /stock-transfers/{id}/cancel:
+    post:
+      summary: Cancel stock transfer and release exact batch reservations
+      tags: [Stock Transfers]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Transfer cancelled and reservations released
+
 components:
   securitySchemes:
     bearerAuth:

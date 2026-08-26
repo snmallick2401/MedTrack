@@ -1,0 +1,1 @@
+import {api}from"./apiClient";import type{TrackingResponse}from"../types/api";export const trackingApi={history:(shipmentId:string)=>api.get<TrackingResponse>(`/shipments/${shipmentId}/tracking`).then(r=>r.data),event:(shipmentId:string,body:unknown)=>api.post<TrackingResponse>(`/shipments/${shipmentId}/events`,body).then(r=>r.data)};
