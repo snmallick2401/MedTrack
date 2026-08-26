@@ -40,6 +40,7 @@ public class BarcodeService {
         return generateBytes(payload, BarcodeFormat.CODE_128, 360, 120);
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public Map<String, Object> getBatchQr(UUID batchId) {
         Batch batch = batches.findById(batchId).orElseThrow(() -> new NotFoundException("Batch"));
         Map<String, String> payloadMap = Map.of(
