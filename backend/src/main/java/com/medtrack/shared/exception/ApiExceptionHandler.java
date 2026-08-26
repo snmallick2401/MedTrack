@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest; import jakarta.validation.Constr
  @ExceptionHandler(org.springframework.orm.ObjectOptimisticLockingFailureException.class) ProblemDetail optimistic(HttpServletRequest r){return problem(HttpStatus.CONFLICT,"OPTIMISTIC_LOCK_CONFLICT","Inventory was changed by another request; retry the operation",r);}
  @ExceptionHandler({MethodArgumentNotValidException.class,ConstraintViolationException.class}) ProblemDetail validation(Exception e,HttpServletRequest r){return problem(HttpStatus.UNPROCESSABLE_ENTITY,"VALIDATION_FAILED","One or more fields are invalid",r);}
  @ExceptionHandler(HttpMessageNotReadableException.class) ProblemDetail malformed(HttpServletRequest r){return problem(HttpStatus.BAD_REQUEST,"MALFORMED_REQUEST","Request body is malformed",r);}
+ @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class) ProblemDetail integrity(HttpServletRequest r){return problem(HttpStatus.CONFLICT,"DUPLICATE_OR_CONSTRAINT_CONFLICT","The request conflicts with existing data",r);}
  @ExceptionHandler(AccessDeniedException.class) ProblemDetail forbidden(HttpServletRequest r){return problem(HttpStatus.FORBIDDEN,"ACCESS_DENIED","You do not have permission for this operation",r);}
- @ExceptionHandler(Exception.class) ProblemDetail generic(Exception e,HttpServletRequest r){return problem(HttpStatus.INTERNAL_SERVER_ERROR,"INTERNAL_ERROR","An unexpected error occurred",r);}
+ @ExceptionHandler(Exception.class) ProblemDetail generic(Exception e,HttpServletRequest r){e.printStackTrace(); return problem(HttpStatus.INTERNAL_SERVER_ERROR,"INTERNAL_ERROR",e.getMessage() != null ? e.getMessage() : "An unexpected error occurred",r);}
 }

@@ -1,0 +1,1 @@
+package com.medtrack.inventory.repository; import com.medtrack.inventory.entity.InventoryLedgerLine; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface InventoryLedgerLineRepository extends JpaRepository<InventoryLedgerLine,UUID>{}

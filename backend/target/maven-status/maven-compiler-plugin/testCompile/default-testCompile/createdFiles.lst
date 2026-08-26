@@ -1,1 +1,3 @@
 com\medtrack\batch\service\BatchServiceTest.class
+com\medtrack\inventory\service\FefoAllocationEngineTest.class
+com\medtrack\inventory\entity\InventoryBalanceConcurrencyTest.class
