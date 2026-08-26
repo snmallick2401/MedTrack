@@ -87,7 +87,7 @@ export function ReportsPage() {
             <Filter size={16} className="text-muted" />
             <label htmlFor="expiry-days-filter" className="text-muted">Threshold:</label>
             <select
-              id="expiry-days-filter"
+              id="expiry-days-filter" aria-label="Filter expiry window"
               value={days}
               onChange={e => setDays(Number(e.target.value))}
               className="rounded border border-border bg-canvas px-3 py-1.5 text-ink outline-none"

@@ -95,9 +95,7 @@ export function TransfersPage() {
           <h2 className="mb-4 text-base font-semibold text-ink">Create transfer request</h2>
           <div className="grid gap-3 md:grid-cols-2">
             <Field label="Destination warehouse">
-              <select
-                required
-                value={destination}
+              <select required name="destinationWarehouseId" value={destination}
                 onChange={e => setDestination(e.target.value)}
                 className="input"
               >
@@ -129,9 +127,7 @@ export function TransfersPage() {
             </div>
             {items.map((item, index) => (
               <div className="mb-2 grid grid-cols-[1fr_120px_auto] gap-2" key={index}>
-                <select
-                  required
-                  value={item.medicineId}
+                <select required name="medicineId" value={item.medicineId}
                   onChange={e =>
                     setItems(all =>
                       all.map((x, i) => (i === index ? { ...x, medicineId: e.target.value } : x))

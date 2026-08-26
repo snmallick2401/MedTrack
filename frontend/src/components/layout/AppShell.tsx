@@ -83,6 +83,10 @@ export function AppShell() {
             </NavLink>
           ))}
         </nav>
+        <div className="mt-8 border-t border-border pt-4 px-2 text-xs">
+          <div className="font-semibold text-ink">{user?.fullName ?? user?.email}</div>
+          <div className="font-mono text-muted">{user?.role}</div>
+        </div>
       </aside>
       {sidebarOpen && (
         <button
