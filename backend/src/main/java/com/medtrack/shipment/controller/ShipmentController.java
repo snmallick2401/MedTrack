@@ -18,6 +18,21 @@ public class ShipmentController {
         service = s;
     }
 
+    @GetMapping("/shipments")
+    @PreAuthorize("isAuthenticated()")
+    public org.springframework.data.domain.Page<ShipmentResponse> list(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        return service.list(org.springframework.data.domain.PageRequest.of(page, Math.min(Math.max(1, size), 100), org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt")));
+    }
+
+    @GetMapping("/shipments/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ShipmentResponse get(@PathVariable UUID id) {
+        return service.get(id);
+    }
+
     @PostMapping("/shipments")
     @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('LOGISTICS_COORDINATOR')")
     public ResponseEntity<ShipmentResponse> create(@Valid @RequestBody ShipmentRequest r) {

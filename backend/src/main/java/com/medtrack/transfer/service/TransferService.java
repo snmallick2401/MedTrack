@@ -179,6 +179,17 @@ public class TransferService {
         });
     }
 
+
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<TransferResponse> list(org.springframework.data.domain.Pageable pageable) {
+        return transfers.findAll(pageable).map(TransferResponse::of);
+    }
+
+    @Transactional(readOnly = true)
+    public TransferResponse get(UUID id) {
+        return TransferResponse.of(transfers.findById(id).orElseThrow(() -> new NotFoundException("Stock transfer")));
+    }
+
     public StockTransfer locked(UUID id) {
         return lock(id);
     }

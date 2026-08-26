@@ -128,6 +128,17 @@ public class ShipmentService {
         });
     }
 
+
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<ShipmentResponse> list(org.springframework.data.domain.Pageable pageable) {
+        return shipments.findAll(pageable).map(ShipmentResponse::of);
+    }
+
+    @Transactional(readOnly = true)
+    public ShipmentResponse get(UUID id) {
+        return ShipmentResponse.of(shipments.findById(id).orElseThrow(() -> new NotFoundException("Shipment")));
+    }
+
     private StockTransfer lockTransfer(UUID id) {
         return transfers.lockById(id).orElseThrow(() -> new NotFoundException("Stock transfer"));
     }

@@ -63,6 +63,7 @@ com\medtrack\inventory\entity\LedgerDirection.class
 com\medtrack\shipment\dto\ShipmentRequest.class
 com\medtrack\supplier\service\SupplierService.class
 com\medtrack\inventory\dto\InboundReceiptRequest.class
+com\medtrack\medicine\controller\MedicineCategoryController.class
 com\medtrack\medicine\controller\MedicineController.class
 com\medtrack\shared\exception\DomainException.class
 com\medtrack\inventory\entity\InventoryLedgerLine.class

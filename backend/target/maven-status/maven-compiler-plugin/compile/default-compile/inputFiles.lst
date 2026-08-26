@@ -47,6 +47,7 @@ C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\inventory\servi
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\inventory\service\FefoAllocationEngine.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\inventory\service\InboundService.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\inventory\service\InventoryMovementService.java
+C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\medicine\controller\MedicineCategoryController.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\medicine\controller\MedicineController.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\medicine\dto\MedicineRequest.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\medicine\dto\MedicineResponse.java

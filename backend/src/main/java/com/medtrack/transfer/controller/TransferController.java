@@ -4,6 +4,7 @@ import com.medtrack.transfer.dto.*;
 import com.medtrack.transfer.service.TransferService;
 import jakarta.validation.Valid;
 import java.util.*;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,7 +17,22 @@ public class TransferController {
     private final TransferService service;
 
     public TransferController(TransferService s) {
-        service = s;
+        this.service = s;
+    }
+
+    @GetMapping
+    @PreAuthorize("isAuthenticated()")
+    public Page<TransferResponse> list(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        return service.list(PageRequest.of(page, Math.min(Math.max(1, size), 100), Sort.by(Sort.Direction.DESC, "createdAt")));
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public TransferResponse get(@PathVariable UUID id) {
+        return service.get(id);
     }
 
     @PostMapping
@@ -69,4 +85,3 @@ public class TransferController {
         return service.cancel(UUID.fromString(user), id, reason, idempotencyKey);
     }
 }
-
