@@ -1,0 +1,1 @@
+package com.medtrack.audit.repository; import com.medtrack.inventory.entity.AuditLog; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*; public interface AuditQueryRepository extends JpaRepository<AuditLog,UUID>{}
