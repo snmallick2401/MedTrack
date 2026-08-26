@@ -1,0 +1,1 @@
+package com.medtrack.medicine.repository; import com.medtrack.medicine.entity.MedicineCategory; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface MedicineCategoryRepository extends JpaRepository<MedicineCategory,UUID>{}

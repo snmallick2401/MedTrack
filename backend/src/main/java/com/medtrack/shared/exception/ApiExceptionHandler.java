@@ -1,0 +1,11 @@
+package com.medtrack.shared.exception;
+import jakarta.servlet.http.HttpServletRequest; import jakarta.validation.ConstraintViolationException; import java.net.URI; import java.time.Instant; import org.springframework.http.*; import org.springframework.security.access.AccessDeniedException; import org.springframework.web.bind.MethodArgumentNotValidException; import org.springframework.web.bind.annotation.*; import org.springframework.http.converter.HttpMessageNotReadableException;
+@RestControllerAdvice public class ApiExceptionHandler {
+ private ProblemDetail problem(HttpStatus status,String code,String detail,HttpServletRequest r){ProblemDetail p=ProblemDetail.forStatusAndDetail(status,detail);p.setType(URI.create("https://medtrack.internal/problems/"+code.toLowerCase()));p.setTitle(status.getReasonPhrase());p.setInstance(URI.create(r.getRequestURI()));p.setProperty("code",code);p.setProperty("timestamp",Instant.now().toString());return p;}
+ @ExceptionHandler(DomainException.class) ProblemDetail domain(DomainException e,HttpServletRequest r){HttpStatus s=e instanceof NotFoundException?HttpStatus.NOT_FOUND:e instanceof ConflictException?HttpStatus.CONFLICT:HttpStatus.UNPROCESSABLE_ENTITY;return problem(s,e.getCode(),e.getMessage(),r);}
+ @ExceptionHandler(org.springframework.orm.ObjectOptimisticLockingFailureException.class) ProblemDetail optimistic(HttpServletRequest r){return problem(HttpStatus.CONFLICT,"OPTIMISTIC_LOCK_CONFLICT","Inventory was changed by another request; retry the operation",r);}
+ @ExceptionHandler({MethodArgumentNotValidException.class,ConstraintViolationException.class}) ProblemDetail validation(Exception e,HttpServletRequest r){return problem(HttpStatus.UNPROCESSABLE_ENTITY,"VALIDATION_FAILED","One or more fields are invalid",r);}
+ @ExceptionHandler(HttpMessageNotReadableException.class) ProblemDetail malformed(HttpServletRequest r){return problem(HttpStatus.BAD_REQUEST,"MALFORMED_REQUEST","Request body is malformed",r);}
+ @ExceptionHandler(AccessDeniedException.class) ProblemDetail forbidden(HttpServletRequest r){return problem(HttpStatus.FORBIDDEN,"ACCESS_DENIED","You do not have permission for this operation",r);}
+ @ExceptionHandler(Exception.class) ProblemDetail generic(Exception e,HttpServletRequest r){return problem(HttpStatus.INTERNAL_SERVER_ERROR,"INTERNAL_ERROR","An unexpected error occurred",r);}
+}

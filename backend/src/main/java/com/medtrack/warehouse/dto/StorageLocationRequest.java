@@ -1,0 +1,1 @@
+package com.medtrack.warehouse.dto; import jakarta.validation.constraints.*; public record StorageLocationRequest(@NotBlank String zone,@NotBlank String rack,@NotBlank String shelf,@NotBlank String binCode){}

@@ -1,0 +1,1 @@
+package com.medtrack.inventory.dto; import jakarta.validation.constraints.*; import java.util.UUID; public record FefoAllocationRequest(@NotNull UUID medicineId,@NotNull UUID warehouseId,@Min(1) int requiredQuantity){}

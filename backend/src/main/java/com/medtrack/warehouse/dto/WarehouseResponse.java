@@ -1,0 +1,1 @@
+package com.medtrack.warehouse.dto; import com.medtrack.warehouse.entity.Warehouse; import java.util.UUID; public record WarehouseResponse(UUID id,String code,String name,String type,String address,String status){public static WarehouseResponse of(Warehouse w){return new WarehouseResponse(w.getId(),w.getCode(),w.getName(),w.getType().name(),w.getAddress(),w.getStatus().name());}}

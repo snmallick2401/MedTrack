@@ -1,0 +1,1 @@
+package com.medtrack.inventory.dto; import jakarta.validation.constraints.*; import java.util.UUID; public record FefoOverrideRequest(@NotNull UUID warehouseId,@NotNull UUID batchId,@Min(1) int quantity,@NotBlank @Size(min=15) String overrideReason){}

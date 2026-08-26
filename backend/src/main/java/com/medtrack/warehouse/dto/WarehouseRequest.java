@@ -1,0 +1,1 @@
+package com.medtrack.warehouse.dto; import com.medtrack.warehouse.entity.*; import jakarta.validation.constraints.*; import java.math.BigDecimal; public record WarehouseRequest(@NotBlank String code,@NotBlank String name,@NotNull WarehouseType type,@NotBlank String address,BigDecimal latitude,BigDecimal longitude,String contactPhone,@NotNull WarehouseStatus status){}

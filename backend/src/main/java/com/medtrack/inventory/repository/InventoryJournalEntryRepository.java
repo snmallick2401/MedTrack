@@ -1,0 +1,1 @@
+package com.medtrack.inventory.repository; import com.medtrack.inventory.entity.InventoryJournalEntry; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface InventoryJournalEntryRepository extends JpaRepository<InventoryJournalEntry,UUID>{}

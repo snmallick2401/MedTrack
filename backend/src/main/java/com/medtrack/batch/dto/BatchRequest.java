@@ -1,0 +1,1 @@
+package com.medtrack.batch.dto; import jakarta.validation.constraints.*; import java.time.LocalDate; import java.util.UUID; public record BatchRequest(@NotBlank String batchNumber,@NotNull UUID medicineId,@NotNull UUID supplierId,@NotNull LocalDate manufacturingDate,@NotNull LocalDate expiryDate,@Min(1) int initialQuantity,String status){}

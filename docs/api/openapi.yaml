@@ -1,0 +1,548 @@
+openapi: 3.0.3
+info:
+  title: MedTrack Operational REST API
+  description: Production-grade pharmaceutical medicine inventory and shipment tracking API.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local Development Server
+  - url: https://api.medtrack.internal/api/v1
+    description: Production Environment
+
+paths:
+  /auth/login:
+    post:
+      summary: Authenticate user and issue tokens
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/ProblemDetail401'
+
+  /auth/refresh:
+    post:
+      summary: Single-Use Refresh Token Rotation (RTR)
+      tags: [Authentication]
+      responses:
+        '200':
+          description: Token rotated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/ProblemDetail401'
+
+  /medicines:
+    get:
+      summary: List medicines catalog with pagination
+      tags: [Medicines]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated medicines
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMedicines'
+    post:
+      summary: Create new medicine master record
+      tags: [Medicines]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMedicineRequest'
+      responses:
+        '201':
+          description: Medicine created
+        '422':
+          $ref: '#/components/responses/ProblemDetail422'
+
+  /inventory/balances:
+    get:
+      summary: Get inventory balances across warehouses
+      tags: [Inventory]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: warehouseId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: medicineId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of inventory balances with 3-bucket state
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InventoryBalanceDTO'
+
+  /inventory/inbound:
+    post:
+      summary: Receive inbound supplier batch consignment
+      tags: [Inventory]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InboundReceiptRequest'
+      responses:
+        '201':
+          description: Batch received and double-entry ledger lines committed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InboundReceiptResponse'
+        '422':
+          $ref: '#/components/responses/ProblemDetail422'
+
+  /stock-transfers:
+    get:
+      summary: List stock transfers
+      tags: [Transfers]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of transfers
+    post:
+      summary: Create inter-store stock transfer request
+      tags: [Transfers]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferRequest'
+      responses:
+        '201':
+          description: Transfer requested
+
+  /stock-transfers/{id}/allocate:
+    post:
+      summary: Execute automated FEFO batch allocation for transfer
+      tags: [Transfers]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Batches allocated and reserved via FEFO
+
+  /stock-transfers/{id}/override-allocation:
+    post:
+      summary: Manually override FEFO batch allocation with mandatory reason
+      tags: [Transfers]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FefoOverrideRequest'
+      responses:
+        '200':
+          description: Manual override recorded and synchronously audited
+
+  /shipments:
+    get:
+      summary: List shipments
+      tags: [Shipments]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of shipments
+    post:
+      summary: Create physical shipment from packed transfer
+      tags: [Shipments]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateShipmentRequest'
+      responses:
+        '201':
+          description: Shipment created and marked DISPATCHED
+
+  /shipments/{id}/events:
+    post:
+      summary: Log movement checkpoint / milestone event
+      tags: [Tracking]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTrackingEventRequest'
+      responses:
+        '201':
+          description: Milestone logged
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: elena.rostova@medtrack.internal
+        password:
+          type: string
+          example: SecurePassword123!
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          example: 900
+        user:
+          $ref: '#/components/schemas/UserDTO'
+
+    UserDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+          enum: [SUPER_ADMIN, CENTRAL_WAREHOUSE_MANAGER, STORE_MANAGER, LOGISTICS_COORDINATOR, AUDITOR]
+        assignedWarehouseId:
+          type: string
+          format: uuid
+          nullable: true
+
+    CreateMedicineRequest:
+      type: object
+      required: [sku, genericName, categoryId, dosageForm, strength, unitOfMeasure]
+      properties:
+        sku:
+          type: string
+          example: MED-ANT-00042
+        genericName:
+          type: string
+          example: Amoxicillin
+        brandName:
+          type: string
+          example: Amoxil
+        categoryId:
+          type: string
+          example: ANTIBIOTIC
+        dosageForm:
+          type: string
+          example: TABLET
+        strength:
+          type: string
+          example: 500mg
+        unitOfMeasure:
+          type: string
+          example: BOX
+        minReceivingShelfLifeDays:
+          type: integer
+          default: 90
+          example: 90
+
+    InventoryBalanceDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        warehouseId:
+          type: string
+          format: uuid
+        batchId:
+          type: string
+          format: uuid
+        availableQuantity:
+          type: integer
+        reservedQuantity:
+          type: integer
+        quarantinedQuantity:
+          type: integer
+        totalPhysicalQuantity:
+          type: integer
+        version:
+          type: integer
+
+    InboundReceiptRequest:
+      type: object
+      required: [supplierId, warehouseId, medicineId, batchNumber, manufacturingDate, expiryDate, quantity]
+      properties:
+        supplierId:
+          type: string
+          format: uuid
+        warehouseId:
+          type: string
+          format: uuid
+        medicineId:
+          type: string
+          format: uuid
+        batchNumber:
+          type: string
+          example: BAT-2026-08A
+        manufacturingDate:
+          type: string
+          format: date
+          example: '2026-01-15'
+        expiryDate:
+          type: string
+          format: date
+          example: '2028-01-15'
+        quantity:
+          type: integer
+          minimum: 1
+          example: 500
+        storageLocationId:
+          type: string
+          format: uuid
+          nullable: true
+
+    InboundReceiptResponse:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        journalEntryNumber:
+          type: string
+          example: JRN-2026-000101
+        qrLabelPayload:
+          type: string
+        availableQuantity:
+          type: integer
+
+    FefoOverrideRequest:
+      type: object
+      required: [batchId, quantity, overrideReason]
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+        overrideReason:
+          type: string
+          minLength: 15
+          example: Customer requested batch with >18 months shelf-life for export shipment.
+
+    CreateTransferRequest:
+      type: object
+      required: [sourceWarehouseId, destinationWarehouseId, items]
+      properties:
+        sourceWarehouseId:
+          type: string
+          format: uuid
+        destinationWarehouseId:
+          type: string
+          format: uuid
+        notes:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            required: [medicineId, requestedQuantity]
+            properties:
+              medicineId:
+                type: string
+                format: uuid
+              requestedQuantity:
+                type: integer
+                minimum: 1
+
+    CreateShipmentRequest:
+      type: object
+      required: [transferId, carrierName, trackingNumber, estimatedArrival]
+      properties:
+        transferId:
+          type: string
+          format: uuid
+        carrierName:
+          type: string
+          example: MediExpress Freight
+        trackingNumber:
+          type: string
+          example: TRK-9901-US
+        driverName:
+          type: string
+          example: John Doe
+        driverPhone:
+          type: string
+          example: '+1-555-0199'
+        vehicleNumber:
+          type: string
+          example: VAN-04
+        estimatedArrival:
+          type: string
+          format: date-time
+
+    CreateTrackingEventRequest:
+      type: object
+      required: [milestoneStatus, locationName]
+      properties:
+        milestoneStatus:
+          type: string
+          enum: [DEPARTED_DEPOT, IN_TRANSIT, CUSTOMS_CLEARED, ARRIVED_HUB, OUT_FOR_DELIVERY, DELIVERED, DELAYED]
+        locationName:
+          type: string
+          example: Checkpoint Alpha (Highway 101, Mile 42)
+        latitude:
+          type: number
+          format: double
+          example: 37.7749
+        longitude:
+          type: number
+          format: double
+          example: -122.4194
+        remarks:
+          type: string
+
+    ProblemDetail:
+      type: object
+      required: [type, title, status, detail, instance, code, timestamp]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    PaginatedMedicines:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            type: object
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+
+  responses:
+    ProblemDetail401:
+      description: Unauthorized
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ProblemDetail422:
+      description: Domain Validation Failure
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'

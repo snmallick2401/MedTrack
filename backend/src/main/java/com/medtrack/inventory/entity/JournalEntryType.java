@@ -1,0 +1,1 @@
+package com.medtrack.inventory.entity; public enum JournalEntryType { INBOUND_RECEIPT, TRANSFER_DISPATCH, TRANSFER_RECEIVE, STOCK_ADJUSTMENT, DISPENSE, WRITE_OFF, QUARANTINE_TRANSFER }

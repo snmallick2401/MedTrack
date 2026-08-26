@@ -1,0 +1,1 @@
+package com.medtrack.inventory.dto; import java.util.*; public record FefoAllocationResponse(List<Allocation> allocations){public record Allocation(UUID batchId,String batchNumber,int quantity,String expiryDate){} }

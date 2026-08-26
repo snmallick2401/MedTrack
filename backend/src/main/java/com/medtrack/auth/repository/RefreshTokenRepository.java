@@ -1,0 +1,1 @@
+package com.medtrack.auth.repository; import com.medtrack.auth.entity.RefreshToken; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface RefreshTokenRepository extends JpaRepository<RefreshToken,UUID>{Optional<RefreshToken> findByTokenHash(String hash); List<RefreshToken> findByFamilyId(UUID familyId);}

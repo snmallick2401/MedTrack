@@ -1,0 +1,1 @@
+package com.medtrack.auth.security; import org.springframework.boot.context.properties.ConfigurationProperties; @ConfigurationProperties(prefix="medtrack.jwt") public record JwtProperties(String secret,long accessTokenMinutes,long refreshTokenDays){}

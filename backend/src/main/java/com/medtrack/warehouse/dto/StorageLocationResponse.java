@@ -1,0 +1,1 @@
+package com.medtrack.warehouse.dto; import com.medtrack.warehouse.entity.StorageLocation; import java.util.UUID; public record StorageLocationResponse(UUID id,String zone,String rack,String shelf,String binCode){public static StorageLocationResponse of(StorageLocation s){return new StorageLocationResponse(s.getId(),s.getZone(),s.getRack(),s.getShelf(),s.getBinCode());}}

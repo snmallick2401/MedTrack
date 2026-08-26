@@ -1,0 +1,1 @@
+package com.medtrack.supplier.repository; import com.medtrack.supplier.entity.Supplier; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface SupplierRepository extends JpaRepository<Supplier,UUID>{boolean existsByCode(String code);}

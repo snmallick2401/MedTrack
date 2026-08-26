@@ -1,0 +1,1 @@
+package com.medtrack.batch.repository; import com.medtrack.batch.entity.Batch; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface BatchRepository extends JpaRepository<Batch,UUID>{boolean existsByMedicine_IdAndBatchNumber(UUID medicineId,String batchNumber);}

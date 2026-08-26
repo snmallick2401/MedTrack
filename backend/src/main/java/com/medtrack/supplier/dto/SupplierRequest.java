@@ -1,0 +1,1 @@
+package com.medtrack.supplier.dto; import jakarta.validation.constraints.*; public record SupplierRequest(@NotBlank String name,@NotBlank String code,@Email String contactEmail,String contactPhone,String address){}

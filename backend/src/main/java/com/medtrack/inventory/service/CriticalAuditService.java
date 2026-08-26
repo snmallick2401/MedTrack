@@ -1,0 +1,2 @@
+package com.medtrack.inventory.service; import com.medtrack.inventory.entity.AuditLog; import com.medtrack.inventory.repository.AuditLogRepository; import java.util.*; import org.springframework.stereotype.Service;
+@Service public class CriticalAuditService {private final AuditLogRepository logs;public CriticalAuditService(AuditLogRepository l){logs=l;}public void record(UUID userId,String action,String entityName,UUID entityId,String changesJson){logs.save(new AuditLog(userId,action,entityName,entityId,changesJson));}}
