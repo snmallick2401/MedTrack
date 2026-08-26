@@ -1,0 +1,1 @@
+package com.medtrack.tracking.provider; import com.medtrack.shipment.entity.Shipment; import com.medtrack.tracking.dto.TrackingEventRequest; import java.util.*; public interface ShipmentTrackingProvider {List<TrackingEventRequest> eventsFor(Shipment shipment);}

@@ -59,13 +59,16 @@ C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shared\exceptio
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shared\exception\ConflictException.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shared\exception\DomainException.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shared\exception\NotFoundException.java
+C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shared\idempotency\IdempotencyService.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shared\model\BaseEntity.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shipment\controller\ShipmentController.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shipment\dto\ReceiveRequest.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shipment\dto\ShipmentRequest.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shipment\dto\ShipmentResponse.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shipment\entity\Shipment.java
+C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shipment\entity\ShipmentItem.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shipment\entity\ShipmentStatus.java
+C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shipment\repository\ShipmentItemRepository.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shipment\repository\ShipmentRepository.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\shipment\service\ShipmentService.java
 C:\Dev\Projects\Java\MedTrack\backend\src\main\java\com\medtrack\supplier\controller\SupplierController.java

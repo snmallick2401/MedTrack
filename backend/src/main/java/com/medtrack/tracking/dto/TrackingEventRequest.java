@@ -1,0 +1,1 @@
+package com.medtrack.tracking.dto; import com.medtrack.tracking.entity.MilestoneStatus; import jakarta.validation.constraints.*; import java.time.Instant; public record TrackingEventRequest(@NotNull MilestoneStatus milestoneStatus,@NotBlank String locationName,Double latitude,Double longitude,String remarks,Instant eventTimestamp){}

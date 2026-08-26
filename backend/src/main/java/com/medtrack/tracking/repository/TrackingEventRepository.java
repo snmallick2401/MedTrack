@@ -1,0 +1,1 @@
+package com.medtrack.tracking.repository; import com.medtrack.tracking.entity.TrackingEvent; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface TrackingEventRepository extends JpaRepository<TrackingEvent,UUID>{List<TrackingEvent> findByShipment_IdOrderByEventTimestampAsc(UUID shipmentId);}

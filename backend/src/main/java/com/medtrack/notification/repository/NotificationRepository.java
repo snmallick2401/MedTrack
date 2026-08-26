@@ -1,0 +1,1 @@
+package com.medtrack.notification.repository; import com.medtrack.notification.entity.Notification; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface NotificationRepository extends JpaRepository<Notification,UUID>{List<Notification> findByReadAtIsNull();}

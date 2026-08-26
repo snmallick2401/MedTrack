@@ -41,6 +41,7 @@ com\medtrack\user\entity\User.class
 com\medtrack\auth\security\SecurityConfig.class
 com\medtrack\auth\entity\RefreshToken.class
 com\medtrack\transfer\dto\PickRequest.class
+com\medtrack\shared\idempotency\IdempotencyService.class
 com\medtrack\inventory\dto\JournalEntryResponse.class
 com\medtrack\shipment\dto\ShipmentResponse.class
 com\medtrack\warehouse\entity\StorageLocation.class
@@ -69,6 +70,7 @@ com\medtrack\medicine\entity\MedicineCategory.class
 com\medtrack\transfer\dto\PickRequest$Item.class
 com\medtrack\warehouse\controller\WarehouseController.class
 com\medtrack\inventory\repository\InventoryBalanceRepository.class
+com\medtrack\shipment\dto\ShipmentResponse$Item.class
 com\medtrack\auth\entity\Permission.class
 com\medtrack\inventory\repository\InventoryLedgerLineRepository.class
 com\medtrack\user\repository\UserRepository.class
@@ -80,6 +82,7 @@ com\medtrack\shipment\dto\ReceiveRequest$Item.class
 com\medtrack\warehouse\dto\WarehouseResponse.class
 com\medtrack\transfer\entity\StockTransfer.class
 com\medtrack\user\entity\UserStatus.class
+com\medtrack\shipment\repository\ShipmentItemRepository.class
 com\medtrack\auth\security\JwtAuthenticationFilter.class
 com\medtrack\transfer\dto\TransferRequest$Item.class
 com\medtrack\shipment\entity\Shipment.class
@@ -94,6 +97,7 @@ com\medtrack\inventory\service\InboundService.class
 com\medtrack\transfer\entity\TransferStatus.class
 com\medtrack\warehouse\repository\StorageLocationRepository.class
 com\medtrack\shared\config\WebConfig.class
+com\medtrack\shipment\entity\ShipmentItem.class
 com\medtrack\inventory\entity\IdempotencyKey.class
 com\medtrack\transfer\repository\StockTransferItemRepository.class
 com\medtrack\shipment\dto\ReceiveRequest.class
