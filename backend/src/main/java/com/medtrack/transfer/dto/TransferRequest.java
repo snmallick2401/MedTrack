@@ -1,0 +1,1 @@
+package com.medtrack.transfer.dto; import jakarta.validation.constraints.*; import java.util.*; public record TransferRequest(@NotNull UUID destinationWarehouseId,@NotEmpty List<Item> items,String notes){public record Item(@NotNull UUID medicineId,@Min(1)int quantity){}}

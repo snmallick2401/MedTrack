@@ -1,0 +1,1 @@
+package com.medtrack.transfer.dto; import jakarta.validation.constraints.*; import java.util.*; public record PickRequest(@NotEmpty List<Item> items){public record Item(@NotNull UUID batchId,@Min(1)int quantity){}}

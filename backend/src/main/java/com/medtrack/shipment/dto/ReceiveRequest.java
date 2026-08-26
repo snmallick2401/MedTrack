@@ -1,0 +1,1 @@
+package com.medtrack.shipment.dto; import jakarta.validation.constraints.*; import java.util.*; public record ReceiveRequest(@NotNull UUID storageLocationId,@NotEmpty List<Item>items,String discrepancyNotes){public record Item(@NotNull UUID batchId,@Min(0)int receivedQuantity,@Min(0)int damagedQuantity){}}

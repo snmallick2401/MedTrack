@@ -1,0 +1,1 @@
+package com.medtrack.shipment.dto; import com.medtrack.shipment.entity.Shipment; import java.util.*; public record ShipmentResponse(UUID id,String shipmentNumber,String status,UUID transferId){public static ShipmentResponse of(Shipment s){return new ShipmentResponse(s.getId(),s.getShipmentNumber(),s.getStatus().name(),s.getTransfer().getId());}}

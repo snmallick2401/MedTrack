@@ -1,0 +1,1 @@
+package com.medtrack.transfer.repository; import com.medtrack.transfer.entity.StockTransferItem; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface StockTransferItemRepository extends JpaRepository<StockTransferItem,UUID>{}

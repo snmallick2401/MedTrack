@@ -1,0 +1,1 @@
+package com.medtrack.shipment.dto; import jakarta.validation.constraints.*; import java.time.Instant; import java.util.*; public record ShipmentRequest(@NotNull UUID transferId,@NotBlank String carrierName,@NotBlank String trackingNumber,String driverName,String driverPhone,String vehicleNumber,@NotNull Instant estimatedArrival){}
