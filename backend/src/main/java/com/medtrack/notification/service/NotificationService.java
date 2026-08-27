@@ -68,14 +68,16 @@ public class NotificationService {
                         + " has expired on " + expiry + ". Immediate quarantine required.";
             } else if (daysToExpiry <= 30) {
                 expiryType = "EXPIRY_CRITICAL";
-                title = "Critical Expiry Alert (<= 30 Days): " + b.getBatch().getBatchNumber();
-                message = "Batch " + b.getBatch().getBatchNumber() + " of " + b.getBatch().getMedicine().getGenericName()
-                        + " expires in " + daysToExpiry + " days (Expiry: " + expiry + "). Available: " + b.getAvailableQuantity();
+                String uom = b.getBatch().getMedicine().getUnitOfMeasure() != null ? b.getBatch().getMedicine().getUnitOfMeasure() : "units";
+                title = "Critical Expiry Alert (≤30 Days): " + b.getBatch().getBatchNumber();
+                message = "Batch " + b.getBatch().getBatchNumber() + " (" + b.getBatch().getMedicine().getGenericName()
+                        + ") expires in " + daysToExpiry + " days (Expiry: " + expiry + "). Available: " + b.getAvailableQuantity() + " " + uom;
             } else if (daysToExpiry <= 90) {
                 expiryType = "NEAR_EXPIRY";
-                title = "Near Expiry Alert (<= 90 Days): " + b.getBatch().getBatchNumber();
-                message = "Batch " + b.getBatch().getBatchNumber() + " of " + b.getBatch().getMedicine().getGenericName()
-                        + " expires in " + daysToExpiry + " days (Expiry: " + expiry + "). Available: " + b.getAvailableQuantity();
+                String uom = b.getBatch().getMedicine().getUnitOfMeasure() != null ? b.getBatch().getMedicine().getUnitOfMeasure() : "units";
+                title = "Near Expiry Alert (≤90 Days): " + b.getBatch().getBatchNumber();
+                message = "Batch " + b.getBatch().getBatchNumber() + " (" + b.getBatch().getMedicine().getGenericName()
+                        + ") expires in " + daysToExpiry + " days (Expiry: " + expiry + "). Available: " + b.getAvailableQuantity() + " " + uom;
             }
 
             if (expiryType != null) {
