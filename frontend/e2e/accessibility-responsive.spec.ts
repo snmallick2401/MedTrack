@@ -29,20 +29,49 @@ test.describe("Accessibility, Responsive Viewports & Dark Mode", () => {
 
   test("opens and navigates command palette using keyboard shortcuts", async ({ page }) => {
     const openButton = page.locator('button[aria-label="Open command palette"]');
-    if (await openButton.isVisible()) {
-      await openButton.click();
-    } else {
-      await page.keyboard.press("Control+k");
-    }
+    await openButton.waitFor({ state: "visible" });
+    await openButton.click();
     const dialog = page.locator('div[role="dialog"][aria-label="Command palette"]');
     await expect(dialog).toBeVisible();
 
     // Type 'reports' in palette search
-    await page.keyboard.type("reports");
+    const input = page.locator('input[aria-label="Search commands"]');
+    await input.fill("reports");
+    await page.waitForTimeout(200);
     await page.keyboard.press("Enter");
 
     await expect(page).toHaveURL(/.*reports/);
     await expect(page.locator("h1")).toContainText("Operational reports");
+  });
+
+  test("auto-scrolls listbox when navigating through long command list with arrow keys", async ({ page }) => {
+    await page.goto("/app/dashboard");
+    const openButton = page.locator('button[aria-label="Open command palette"]');
+    await openButton.waitFor({ state: "visible" });
+    await openButton.click();
+    const dialog = page.locator('div[role="dialog"][aria-label="Command palette"]');
+    await expect(dialog).toBeVisible();
+
+    const listbox = page.locator('div[role="listbox"]');
+
+    // Press ArrowDown 10 times to navigate down to lower categories
+    for (let i = 0; i < 10; i++) {
+      await page.keyboard.press("ArrowDown");
+      await page.waitForTimeout(50);
+    }
+
+    // Verify listbox has scrolled down to keep selected item in view
+    const scrollTopAfterDown = await listbox.evaluate(el => el.scrollTop);
+    expect(scrollTopAfterDown).toBeGreaterThan(0);
+
+    // Press ArrowUp 10 times to navigate back to top
+    for (let i = 0; i < 10; i++) {
+      await page.keyboard.press("ArrowUp");
+      await page.waitForTimeout(50);
+    }
+
+    const scrollTopAfterUp = await listbox.evaluate(el => el.scrollTop);
+    expect(scrollTopAfterUp).toBeLessThanOrEqual(50);
   });
 
   test("renders responsively on mobile viewport (375x812)", async ({ page }) => {

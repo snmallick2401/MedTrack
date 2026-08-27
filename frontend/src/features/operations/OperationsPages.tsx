@@ -12,7 +12,9 @@ import {
   Send,
   Truck,
   Camera,
-  RefreshCw
+  RefreshCw,
+  Search,
+  X
 } from "lucide-react";
 import { operationsApi } from "../../services/operationsApi";
 import { masterDataApi } from "../../services/masterDataApi";
@@ -24,7 +26,7 @@ import type { Shipment, Transfer } from "../../types/api";
 const Button = ({ children, ...p }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
   <button
     {...p}
-    className={`inline-flex min-h-10 items-center justify-center gap-2 rounded bg-ink px-4 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
+    className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-ink px-4 text-sm font-semibold text-canvas shadow-xs transition hover:opacity-90 active:scale-[0.98] disabled:bg-surface-strong disabled:text-muted disabled:border disabled:border-border disabled:opacity-85 disabled:cursor-not-allowed ${
       p.className ?? ""
     }`}
   >
@@ -33,7 +35,7 @@ const Button = ({ children, ...p }: React.ButtonHTMLAttributes<HTMLButtonElement
 );
 
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <label className="grid gap-1 text-sm font-medium text-ink">
+  <label className="grid gap-1 text-xs font-semibold text-ink">
     <span>{label}</span>
     {children}
   </label>
@@ -41,12 +43,18 @@ const Field = ({ label, children }: { label: string; children: React.ReactNode }
 
 const Error = ({ error }: { error: unknown }) =>
   error ? <ErrorBanner message={errorMessage(error)} /> : null;
+
 export function TransfersPage() {
   const [transfer, setTransfer] = useState<Transfer>();
   const [error, setError] = useState<unknown>();
   const [showCreate, setShowCreate] = useState(false);
   const [destination, setDestination] = useState("");
   const [items, setItems] = useState([{ medicineId: "", quantity: 1 }]);
+
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING" | "ACTIVE" | "COMPLETED" | "CANCELLED">("ALL");
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
 
   const qc = useQueryClient();
   const warehouses = useQuery({ queryKey: ["warehouses"], queryFn: () => masterDataApi.warehouses() });
@@ -73,15 +81,93 @@ export function TransfersPage() {
     });
   }
 
+  const warehouseMap = useMemo(() => {
+    const map = new Map<string, { code: string; name: string }>();
+    if (warehouses.data?.content) {
+      for (const w of warehouses.data.content) {
+        map.set(w.id, { code: w.code, name: w.name });
+      }
+    }
+    return map;
+  }, [warehouses.data]);
+
+  const allTransfers = transfersList.data?.content ?? [];
+
+  // Summary Metrics Counts
+  const metrics = useMemo(() => {
+    const total = allTransfers.length;
+    const pending = allTransfers.filter(t => t.status === "REQUESTED" || t.status === "APPROVED").length;
+    const active = allTransfers.filter(t => ["ALLOCATED", "PICKED", "PACKED", "DISPATCHED", "IN_TRANSIT"].includes(t.status)).length;
+    const completed = allTransfers.filter(t => t.status === "COMPLETED" || t.status === "RECEIVED").length;
+    return { total, pending, active, completed };
+  }, [allTransfers]);
+
+  // Filtered Transfers
+  const filteredTransfers = useMemo(() => {
+    return allTransfers.filter(t => {
+      if (statusFilter === "PENDING" && !["REQUESTED", "APPROVED"].includes(t.status)) return false;
+      if (statusFilter === "ACTIVE" && !["ALLOCATED", "PICKED", "PACKED", "DISPATCHED", "IN_TRANSIT"].includes(t.status)) return false;
+      if (statusFilter === "COMPLETED" && !["COMPLETED", "RECEIVED"].includes(t.status)) return false;
+      if (statusFilter === "CANCELLED" && t.status !== "CANCELLED") return false;
+
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      const src = warehouseMap.get(t.sourceWarehouseId ?? "")?.name.toLowerCase() ?? "";
+      const dst = warehouseMap.get(t.destinationWarehouseId)?.name.toLowerCase() ?? "";
+      return (
+        t.transferNumber.toLowerCase().includes(q) ||
+        src.includes(q) ||
+        dst.includes(q) ||
+        t.status.toLowerCase().includes(q)
+      );
+    });
+  }, [allTransfers, statusFilter, search, warehouseMap]);
+
+  // Pagination
+  const totalItems = filteredTransfers.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentPage = Math.min(page, totalPages - 1);
+  const paginatedTransfers = useMemo(() => {
+    const start = Math.max(0, currentPage) * pageSize;
+    return filteredTransfers.slice(start, start + pageSize);
+  }, [filteredTransfers, currentPage, pageSize]);
+
+  const pageStart = totalItems === 0 ? 0 : Math.max(0, currentPage) * pageSize + 1;
+  const pageEnd = Math.min((Math.max(0, currentPage) + 1) * pageSize, totalItems);
+
+  function getActionInfo(status: string) {
+    switch (status) {
+      case "REQUESTED":
+        return { label: "Allocate (FEFO) →", primary: true };
+      case "APPROVED":
+        return { label: "Allocate Stock →", primary: true };
+      case "ALLOCATED":
+        return { label: "Pick & Dispatch →", primary: true };
+      case "PICKED":
+      case "PACKED":
+        return { label: "Dispatch Shipment →", primary: true };
+      case "DISPATCHED":
+      case "IN_TRANSIT":
+        return { label: "Receive Stock →", primary: true };
+      case "COMPLETED":
+      case "RECEIVED":
+        return { label: "View Manifest & Audit →", primary: false };
+      case "CANCELLED":
+        return { label: "View Audit Log →", primary: false };
+      default:
+        return { label: "Manage Workbench →", primary: false };
+    }
+  }
+
   if (warehouses.isLoading || medicines.isLoading) return <Loading />;
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
         <div>
-          <h1 className="text-2xl font-semibold text-ink">Stock transfers & FEFO allocation</h1>
-          <p className="text-muted">
-            Request transfers, allocate earliest-expiring inventory via FEFO, pick, pack, and prepare for dispatch.
+          <h1 className="text-2xl font-bold tracking-tight text-ink">Stock transfers & FEFO allocation</h1>
+          <p className="mt-1 text-xs text-muted">
+            Request stock transfers, allocate earliest-expiring inventory via FEFO, pick, pack, and track inter-warehouse dispatches.
           </p>
         </div>
         <Button onClick={() => setShowCreate(v => !v)}>
@@ -90,35 +176,58 @@ export function TransfersPage() {
         </Button>
       </div>
 
+      {/* KPI Overview Cards */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-xl border border-border bg-canvas p-3.5 shadow-xs">
+          <span className="text-[11px] font-medium text-muted uppercase tracking-wider">Total Transfers</span>
+          <p className="mt-1 text-2xl font-bold text-ink">{metrics.total}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-canvas p-3.5 shadow-xs">
+          <span className="text-[11px] font-medium text-warning uppercase tracking-wider">Pending FEFO</span>
+          <p className="mt-1 text-2xl font-bold text-ink">{metrics.pending}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-canvas p-3.5 shadow-xs">
+          <span className="text-[11px] font-medium text-blue uppercase tracking-wider">Active In-Transit</span>
+          <p className="mt-1 text-2xl font-bold text-ink">{metrics.active}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-canvas p-3.5 shadow-xs">
+          <span className="text-[11px] font-medium text-success uppercase tracking-wider">Completed Fulfillments</span>
+          <p className="mt-1 text-2xl font-bold text-ink">{metrics.completed}</p>
+        </div>
+      </div>
+
       {showCreate && (
-        <form onSubmit={submit} className="rounded-lg border border-border bg-canvas p-5 shadow-sm">
-          <h2 className="mb-4 text-base font-semibold text-ink">Create transfer request</h2>
+        <form onSubmit={submit} className="rounded-xl border border-border bg-canvas p-5 shadow-xs">
+          <div className="mb-4 border-b border-border pb-3">
+            <h2 className="text-base font-semibold text-ink">Create transfer request</h2>
+            <p className="text-xs text-muted">Initialize an inter-facility stock movement with atomic FEFO reservation.</p>
+          </div>
           <div className="grid gap-3 md:grid-cols-2">
             <Field label="Destination warehouse">
               <select required name="destinationWarehouseId" value={destination}
                 onChange={e => setDestination(e.target.value)}
-                className="input"
+                className="input text-xs"
               >
-                <option value="">Select destination</option>
+                <option value="">Select destination facility…</option>
                 {warehouses.data?.content
                   .filter(x => x.status === "ACTIVE")
                   .map(x => (
                     <option key={x.id} value={x.id}>
-                      {x.code} — {x.name}
+                      {x.code} — {x.name} ({x.type.replaceAll("_", " ")})
                     </option>
                   ))}
               </select>
             </Field>
-            <Field label="Notes">
-              <input name="notes" className="input" placeholder="Handling instructions or priority" />
+            <Field label="Notes & Priority">
+              <input name="notes" className="input text-xs" placeholder="e.g. Urgent dispensary restock" />
             </Field>
           </div>
           <div className="mt-4">
             <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-ink">Requested medicines</h3>
+              <h3 className="text-xs font-semibold text-ink uppercase tracking-wider">Requested medicines</h3>
               <button
                 type="button"
-                className="text-xs font-medium text-blue hover:underline"
+                className="text-xs font-semibold text-blue hover:underline"
                 onClick={() => setItems(i => [...i, { medicineId: "", quantity: 1 }])}
               >
                 <Plus className="mr-1 inline" size={14} />
@@ -126,16 +235,16 @@ export function TransfersPage() {
               </button>
             </div>
             {items.map((item, index) => (
-              <div className="mb-2 grid grid-cols-[1fr_120px_auto] gap-2" key={index}>
+              <div className="mb-2 grid grid-cols-[1fr_140px_auto] gap-2" key={index}>
                 <select required name="medicineId" value={item.medicineId}
                   onChange={e =>
                     setItems(all =>
                       all.map((x, i) => (i === index ? { ...x, medicineId: e.target.value } : x))
                     )
                   }
-                  className="input"
+                  className="input text-xs"
                 >
-                  <option value="">Select active medicine</option>
+                  <option value="">Select active medicine formulation…</option>
                   {medicines.data?.content
                     .filter(x => x.status === "ACTIVE")
                     .map(x => (
@@ -146,9 +255,10 @@ export function TransfersPage() {
                 </select>
                 <input
                   aria-label="Requested quantity"
-                  className="input"
+                  className="input text-xs font-mono"
                   min="1"
                   type="number"
+                  placeholder="Quantity"
                   value={item.quantity}
                   onChange={e =>
                     setItems(all =>
@@ -158,7 +268,7 @@ export function TransfersPage() {
                 />
                 <button
                   aria-label="Remove item"
-                  className="rounded px-2 text-danger disabled:opacity-40"
+                  className="rounded px-2.5 text-danger hover:bg-danger-bg/50 disabled:opacity-40"
                   type="button"
                   disabled={items.length === 1}
                   onClick={() => setItems(all => all.filter((_, i) => i !== index))}
@@ -169,66 +279,200 @@ export function TransfersPage() {
             ))}
           </div>
           <Error error={error} />
-          <div className="mt-4">
+          <div className="mt-4 pt-2">
             <Button type="submit" disabled={create.isPending}>
               <Plus size={16} />
-              {create.isPending ? "Submitting…" : "Submit transfer request"}
+              {create.isPending ? "Submitting transfer…" : "Submit transfer request"}
             </Button>
           </div>
         </form>
       )}
 
-      <div className="rounded-lg border border-border bg-canvas shadow-sm">
-        <div className="border-b border-border p-4">
-          <h2 className="text-base font-semibold text-ink">All stock transfers</h2>
+      {/* Control Filter Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-1 flex-wrap items-center gap-3">
+          <div className="relative flex flex-1 min-w-[280px] max-w-md items-center">
+            <Search size={16} className="pointer-events-none absolute left-3.5 text-muted z-10" />
+            <input
+              value={search}
+              onChange={e => {
+                setSearch(e.target.value);
+                setPage(0);
+              }}
+              className="input search-input h-10 text-xs w-full"
+              placeholder="Search transfer # or warehouse…"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute right-3 text-muted hover:text-ink"
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          <div className="flex h-10 items-center rounded-lg border border-border bg-surface-soft p-1 text-xs shrink-0">
+            {(
+              [
+                { id: "ALL", label: "All transfers" },
+                { id: "PENDING", label: "Pending allocation" },
+                { id: "ACTIVE", label: "In transit" },
+                { id: "COMPLETED", label: "Completed" }
+              ] as const
+            ).map(tab => {
+              const isActive = statusFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setStatusFilter(tab.id);
+                    setPage(0);
+                  }}
+                  className={`h-full px-3 rounded-md text-xs font-semibold transition flex items-center justify-center ${
+                    isActive
+                      ? "bg-canvas text-ink shadow-xs border border-border/80"
+                      : "text-muted hover:text-ink hover:bg-canvas/50"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        <div className="flex h-10 items-center rounded-lg border border-border bg-surface-soft px-3.5 text-xs text-muted shrink-0">
+          Showing&nbsp;<strong className="text-ink">{pageStart}–{pageEnd}</strong>&nbsp;of&nbsp;<strong className="text-ink">{totalItems}</strong>&nbsp;transfers
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-canvas shadow-xs overflow-hidden">
         {transfersList.isLoading ? (
           <Loading />
-        ) : !transfersList.data?.content.length ? (
-          <Empty title="No stock transfers found" />
+        ) : !paginatedTransfers.length ? (
+          <div className="p-8 text-center">
+            <Empty title="No stock transfers found" />
+            {(search || statusFilter !== "ALL") && (
+              <button
+                onClick={() => {
+                  setSearch("");
+                  setStatusFilter("ALL");
+                }}
+                className="mt-3 rounded-lg border border-border bg-surface-soft px-3 py-1 text-xs font-semibold text-ink hover:bg-canvas"
+              >
+                Reset search filters
+              </button>
+            )}
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border bg-surface-soft text-xs uppercase text-muted">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-border bg-surface-soft/60 text-[11px] font-semibold uppercase tracking-wider text-muted">
                 <tr>
-                  <th className="p-3">Transfer #</th>
-                  <th className="p-3">Source → Destination</th>
-                  
-                  <th className="p-3">Status</th>
-                  <th className="p-3 text-right">Action</th>
+                  <th className="px-4 py-3 w-[160px]">Transfer #</th>
+                  <th className="px-4 py-3 min-w-[280px]">Source → Destination Route</th>
+                  <th className="px-4 py-3 w-[120px]">Status</th>
+                  <th className="px-4 py-3 text-right w-[180px]">Operational Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {transfersList.data.content.map(t => (
-                  <tr
-                    key={t.id}
-                    className={`hover:bg-surface-soft/50 ${
-                      transfer?.id === t.id ? "bg-surface-soft font-medium" : ""
-                    }`}
-                  >
-                    <td className="p-3 font-mono font-medium text-ink">{t.transferNumber}</td>
-                    <td className="p-3 text-muted">
-                      {t.sourceWarehouseId ? t.sourceWarehouseId.slice(0, 8) : "Central Depot"} →{" "}
-                      {t.destinationWarehouseId.slice(0, 8)}
-                    </td>
-                    
-                    <td className="p-3">
-                      <StatusBadge status={t.status} />
-                    </td>
-                    <td className="p-3 text-right">
-                      <button
-                        onClick={() => {
-                          operationsApi.transfer(t.id).then(setTransfer);
-                        }}
-                        className="text-sm font-medium text-blue hover:underline"
-                      >
-                        Manage & Workbench
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {paginatedTransfers.map(t => {
+                  const src = warehouseMap.get(t.sourceWarehouseId ?? "");
+                  const dst = warehouseMap.get(t.destinationWarehouseId);
+                  const action = getActionInfo(t.status);
+                  const isSelected = transfer?.id === t.id;
+
+                  return (
+                    <tr
+                      key={t.id}
+                      className={`transition hover:bg-surface-soft/40 ${
+                        isSelected ? "bg-surface-soft/80 font-medium" : ""
+                      }`}
+                    >
+                      <td className="px-4 py-3 font-mono font-semibold text-ink">
+                        {t.transferNumber}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-ink">
+                          <span className="rounded bg-surface-soft px-1.5 py-0.5 font-mono text-[11px] font-bold text-ink">
+                            {src?.code ?? "CW01"}
+                          </span>
+                          <span className="text-muted text-[11px]">({src?.name ?? "Central Warehouse"})</span>
+                          <span className="text-muted font-bold">→</span>
+                          <span className="rounded bg-surface-soft px-1.5 py-0.5 font-mono text-[11px] font-bold text-ink">
+                            {dst?.code ?? "DS01"}
+                          </span>
+                          <span className="text-muted text-[11px]">({dst?.name ?? "Distribution Store"})</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={t.status} />
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => {
+                            operationsApi.transfer(t.id).then(setTransfer);
+                          }}
+                          className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold shadow-xs transition ${
+                            action.primary
+                              ? "bg-ink text-canvas hover:opacity-90"
+                              : "border border-border bg-canvas text-ink hover:bg-surface-soft"
+                          }`}
+                        >
+                          <span>{action.label}</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination Bar */}
+        {totalItems > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-surface-soft/40 px-4 py-3 text-xs">
+            <div className="flex items-center gap-2 text-muted">
+              <span>Items per page:</span>
+              <select
+                value={pageSize}
+                onChange={e => {
+                  setPageSize(Number(e.target.value));
+                  setPage(0);
+                }}
+                className="rounded border border-border bg-canvas px-2 py-1 text-xs text-ink"
+              >
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                disabled={currentPage === 0}
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+                className="rounded border border-border bg-canvas px-2.5 py-1 text-xs font-medium text-ink shadow-xs hover:bg-surface-soft disabled:opacity-40 disabled:cursor-not-allowed"
+                aria-label="Previous page"
+              >
+                Prev
+              </button>
+              <span className="font-mono text-muted">
+                Page <strong className="text-ink">{currentPage + 1}</strong> of{" "}
+                <strong className="text-ink">{totalPages}</strong>
+              </span>
+              <button
+                disabled={currentPage >= totalPages - 1}
+                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                className="rounded border border-border bg-canvas px-2.5 py-1 text-xs font-medium text-ink shadow-xs hover:bg-surface-soft disabled:opacity-40 disabled:cursor-not-allowed"
+                aria-label="Next page"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -708,28 +952,56 @@ export function NotificationsPage() {
         <Empty title="You have no unread notifications" />
       ) : (
         <div className="grid gap-3">
-          {q.data.map(n => (
-            <article key={n.id} className="rounded-lg border border-border bg-canvas p-4 shadow-sm">
-              <div className="flex justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Bell size={16} className="text-warning" />
-                    <strong className="text-ink">{n.title}</strong>
+          {q.data.map(n => {
+            const isCritical = n.type.includes("CRITICAL") || n.type.includes("EXPIRED");
+            const badgeClass = isCritical
+              ? "border-danger/30 bg-danger-bg text-danger"
+              : n.type.includes("DELAY") || n.type.includes("LOW")
+              ? "border-warning/30 bg-warning-bg text-warning"
+              : "border-info/30 bg-info-bg text-info";
+            const badgeLabel = isCritical
+              ? "Critical Expiry (≤30 Days)"
+              : n.type.includes("DELAY")
+              ? "Shipment Delayed"
+              : n.type.includes("LOW")
+              ? "Low Stock Threshold"
+              : "Near Expiry (≤90 Days)";
+
+            return (
+              <article key={n.id} className="rounded-lg border border-border bg-canvas p-4 shadow-sm transition hover:bg-surface-soft/40">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Bell size={16} className={isCritical ? "text-danger" : "text-warning"} />
+                      <strong className="text-sm font-semibold text-ink">{n.title}</strong>
+                      <span className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] font-semibold ${badgeClass}`}>
+                        {badgeLabel}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs leading-relaxed text-body">{n.message}</p>
+                    <time className="mt-3 block font-mono text-[11px] text-muted">
+                      {new Intl.DateTimeFormat("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                        hour12: true,
+                        timeZoneName: "short"
+                      }).format(new Date(n.createdAt))}
+                    </time>
                   </div>
-                  <p className="mt-1 text-sm text-body">{n.message}</p>
-                  <time className="mt-2 block text-xs text-muted">
-                    {new Date(n.createdAt).toLocaleString()}
-                  </time>
+                  <button
+                    className="inline-flex shrink-0 items-center rounded border border-border bg-surface-soft px-2.5 py-1 text-xs font-medium text-ink hover:bg-canvas"
+                    onClick={() => read.mutate(n.id)}
+                  >
+                    Mark read
+                  </button>
                 </div>
-                <button
-                  className="self-start text-xs font-medium text-blue hover:underline"
-                  onClick={() => read.mutate(n.id)}
-                >
-                  Mark read
-                </button>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
       )}
     </section>

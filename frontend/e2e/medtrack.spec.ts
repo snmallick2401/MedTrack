@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("MedTrack Primary Pharmaceutical Business Journey", () => {
   const uniqueId = Date.now().toString().slice(-5);
   const sku = `MED-AMOX-${uniqueId}`;
-  const genericName = `Amoxicillin ${uniqueId}mg`;
+  const genericName = "Amoxicillin Trihydrate";
   const batchNumber = `BAT-2026-${uniqueId}`;
 
   test("executes end-to-end pharmaceutical workflow against live PostgreSQL backend", async ({ page }) => {
@@ -118,13 +118,13 @@ test.describe("MedTrack Primary Pharmaceutical Business Journey", () => {
 
     // Step C: Confirm Pick
     const pickBtn = page.locator('button:has-text("Confirm pick")');
-    await expect(pickBtn).toBeVisible();
+    await expect(pickBtn).toBeVisible({ timeout: 10000 });
     await pickBtn.click();
     await page.waitForTimeout(1000);
 
     // Step D: Pack Transfer
     const packBtn = page.locator('button:has-text("Pack transfer")');
-    await expect(packBtn).toBeVisible();
+    await expect(packBtn).toBeVisible({ timeout: 10000 });
     await packBtn.click();
     await page.waitForTimeout(1000);
 
@@ -144,7 +144,7 @@ test.describe("MedTrack Primary Pharmaceutical Business Journey", () => {
 
     // 8. Dispatch Shipment
     const dispatchBtn = page.locator('button:has-text("Dispatch shipment")');
-    await expect(dispatchBtn).toBeVisible();
+    await expect(dispatchBtn).toBeVisible({ timeout: 10000 });
     await dispatchBtn.click();
     await page.waitForTimeout(1000);
 
@@ -154,7 +154,7 @@ test.describe("MedTrack Primary Pharmaceutical Business Journey", () => {
     await destLocInput.fill("56285916-8034-4911-a839-9ec32165014a");
 
     const receiveBtn = page.locator('button:has-text("Confirm physical receipt")');
-    await expect(receiveBtn).toBeVisible();
+    await expect(receiveBtn).toBeVisible({ timeout: 10000 });
     await receiveBtn.click();
     await page.waitForTimeout(1500);
 

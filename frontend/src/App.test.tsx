@@ -1,9 +1,21 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 import { useUiStore } from "./store/uiStore";
+
+vi.mock("./services/operationsApi", () => ({
+  operationsApi: {
+    notifications: vi.fn().mockResolvedValue([]),
+    transfers: vi.fn().mockResolvedValue({ content: [], totalElements: 0 }),
+    shipments: vi.fn().mockResolvedValue({ content: [], totalElements: 0 })
+  }
+}));
+
+vi.mock("./services/reportApi", () => ({
+  reportApi: { expiryData: vi.fn().mockResolvedValue([]) }
+}));
 
 function renderWithClient(ui: React.ReactElement, { route = "/" } = {}) {
   const queryClient = new QueryClient({

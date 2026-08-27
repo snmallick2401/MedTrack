@@ -1,5 +1,5 @@
 import { api } from "./apiClient";
-import type { AuditLog, Notification, Shipment, Transfer } from "../types/api";
+import type { AuditLog, Notification, Page, Shipment, Transfer } from "../types/api";
 
 const key = () => crypto.randomUUID();
 
@@ -11,7 +11,7 @@ export const operationsApi = {
   qr: (batchId: string) => api.get<{ dataUri: string }>(`/batches/${batchId}/barcode/qr`).then(r => r.data),
   code128: (batchId: string) => api.get<{ dataUri: string }>(`/batches/${batchId}/barcode/code128`).then(r => r.data),
   transfers: (page = 0) =>
-    api.get<{ content: Transfer[] }>("/stock-transfers", { params: { page, size: 50 } }).then(r => r.data),
+    api.get<Page<Transfer>>("/stock-transfers", { params: { page, size: 50 } }).then(r => r.data),
   transfer: (id: string) => api.get<Transfer>(`/stock-transfers/${id}`).then(r => r.data),
   createTransfer: (body: unknown) =>
     api.post<Transfer>("/stock-transfers", body, { headers: { "X-Idempotency-Key": key() } }).then(r => r.data),
@@ -24,7 +24,7 @@ export const operationsApi = {
   cancelTransfer: (id: string, reason: string) =>
     api.post<Transfer>(`/stock-transfers/${id}/cancel`, { reason }, { headers: { "X-Idempotency-Key": key() } }).then(r => r.data),
   shipments: (page = 0) =>
-    api.get<{ content: Shipment[] }>("/shipments", { params: { page, size: 50 } }).then(r => r.data),
+    api.get<Page<Shipment>>("/shipments", { params: { page, size: 50 } }).then(r => r.data),
   shipment: (id: string) => api.get<Shipment>(`/shipments/${id}`).then(r => r.data),
   createShipment: (body: unknown) => api.post<Shipment>("/shipments", body).then(r => r.data),
   dispatch: (transferId: string) =>
