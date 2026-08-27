@@ -12,11 +12,14 @@
 [![Vite 6](https://img.shields.io/badge/Vite-6.4.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS 3.4](https://img.shields.io/badge/Tailwind%20CSS-3.4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Playwright 1.58](https://img.shields.io/badge/Playwright-1.58-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 <p align="center">
   <b>Enterprise-grade, GxP-compliant pharmaceutical inventory management and inter-facility logistics.</b><br/>
   Featuring double-entry ledger accounting, automated FEFO allocation, minimum shelf-life enforcement, 2D QR / Code-128 labeling, in-browser optical scanning, real-time transportation telemetry, and cryptographic audit trails.
 </p>
+
+[Explore Documentation](docs/prd.md) • [View Architecture](docs/architecture.md) • [API Contract](docs/api/openapi.yaml) • [Getting Started](#-getting-started)
 
 </div>
 
@@ -26,6 +29,8 @@
 
 - [Overview](#-overview)
 - [Key Architectural Capabilities](#-key-architectural-capabilities)
+- [End-to-End Pharmaceutical Lifecycle](#-end-to-end-pharmaceutical-lifecycle)
+- [Double-Entry Ledger Mechanics](#-double-entry-ledger-mechanics)
 - [Technology Baseline](#-technology-baseline)
 - [System Architecture](#-system-architecture)
 - [Repository Structure](#-repository-structure)
@@ -34,29 +39,32 @@
   - [1. Database Configuration](#1-database-configuration)
   - [2. Backend Setup](#2-backend-setup)
   - [3. Frontend Setup](#3-frontend-setup)
+  - [4. Docker Compose Deployment](#4-docker-compose-deployment)
 - [Pre-Seeded Roles & Personas](#-pre-seeded-roles--personas)
 - [Testing & Quality Assurance](#-testing--quality-assurance)
   - [Automated Backend Suite](#automated-backend-suite)
   - [Frontend Component Tests](#frontend-component-tests)
   - [Playwright End-to-End Suite](#playwright-end-to-end-suite)
-- [REST API & Specifications](#-rest-api--specifications)
-- [UI/UX & Design System](#-uiux--design-system)
-- [Security & Compliance](#-security--compliance)
-- [License](#-license)
+- [REST API & OpenAPI Specification](#-rest-api--openapi-specification)
+- [UI/UX, Accessibility & Design Tokens](#-uiux-accessibility--design-tokens)
+- [Environment Variables Reference](#-environment-variables-reference)
+- [Security & Regulatory Compliance](#-security--regulatory-compliance)
+- [License & Support](#-license--support)
 
 ---
 
 ## 🌟 Overview
 
-**MedTrack** is designed for hospital networks, central pharmaceutical repositories, and regional healthcare supply chains. It enforces pharmaceutical compliance (GxP/FDA 21 CFR Part 11) across procurement, warehouse storage, pick-pack fulfillment, and inter-facility transit.
+**MedTrack** is an enterprise-tier operational management platform engineered specifically for healthcare systems, regional pharmaceutical repositories, and multi-depot distribution networks. It strictly enforces pharmaceutical supply chain integrity (GxP / FDA 21 CFR Part 11) across procurement, storage bin allocation, order fulfillment, and inter-facility transit.
 
-Traditional inventory management systems frequently fail in pharmaceutical environments due to negative balance race conditions, lack of strict shelf-life validation, or unverified manual lot selection. MedTrack resolves these challenges through:
+### Why Standard ERP / Inventory Systems Fail for Pharmaceuticals:
+* **Negative Stock Balances**: Race conditions in high-throughput distribution centers create phantom inventory.
+* **Expired Medication Dispensation**: Inability to enforce atomic First-Expired, First-Out (FEFO) rules leading to clinical non-compliance and financial waste.
+* **Substandard Inbound Receiving**: Lack of automated minimum shelf-life validation at the dock door.
+* **Untracked Cold-Chain & In-Transit Delays**: Zero real-time telemetry or milestone delay alerting during transportation.
+* **Audit Trail Tampering**: Mutable audit records that fail stringent regulatory inspections.
 
-1. **Atomic Double-Entry Accounting**: Every physical movement generates balanced Debit/Credit journal ledger entries.
-2. **Automated FEFO (First-Expired, First-Out)**: Allocation algorithms strictly reserve the earliest-expiring viable stock batches.
-3. **90-Day Inbound Policy (AC-01)**: Rejects supplier shipments with insufficient remaining shelf-life at the receiving dock.
-4. **Idempotent Mutations**: Guarantees zero double-allocation or double-dispatch during network retries.
-5. **Real-Time GPS & Milestone Telemetry**: Tracks shipments in transit with automated delay alarms.
+MedTrack eliminates these vulnerabilities through mathematical ledger invariants, automated FEFO reservation engines, optical barcode tooling, and immutable cryptographic audit logging.
 
 ---
 
@@ -68,8 +76,8 @@ Traditional inventory management systems frequently fail in pharmaceutical envir
 ├────────────────────────────────┬────────────────────────────────┬──────────────────────────────┤
 │ 1. True Double-Entry Ledger    │ 2. Enforced FEFO Allocation    │ 3. Explicit Domain Triad     │
 │ • Balanced Debit & Credit lines│ • First-Expired, First-Out     │ • Transfer (Business Intent) │
-│ • 3-Bucket state tracking      │ • Strict manual override audit │ • Shipment (Transport)       │
-│   (Available/Reserved/Quarant) │ • Configurable shelf-life days │ • Tracking (Telemetry)       │
+│ • 4-Bucket state tracking      │ • Strict manual override audit │ • Shipment (Transport)       │
+│   (Avail/Reserv/Quaran/Transit)│ • Configurable shelf-life days │ • Tracking (Telemetry)       │
 ├────────────────────────────────┼────────────────────────────────┼──────────────────────────────┤
 │ 4. Single-Use Token RTR        │ 5. Optical & Barcode Labels    │ 6. Cryptographic Audit Log   │
 │ • Refresh Token Rotation (RTR) │ • 2D QR (GS1 digital payload)  │ • Synchronous commit         │
@@ -78,20 +86,72 @@ Traditional inventory management systems frequently fail in pharmaceutical envir
 └────────────────────────────────┴────────────────────────────────┴──────────────────────────────┘
 ```
 
-* **Double-Entry Journal Balancing**:
-  Physical inventory counts are computed exclusively by aggregating immutable journal ledger transactions. Negative inventory balances are strictly impossible.
-* **FEFO Stock Allocation Engine**:
-  When a distribution store requests stock, MedTrack searches active inventory across storage bins and automatically locks the earliest-expiring batch matching the requested dosage formulation.
+* **Mathematical Inventory Invariants**:
+  Physical inventory counts are computed exclusively by aggregating immutable journal ledger transactions. Negative inventory balances are strictly impossible at the database constraint level.
+* **Automated FEFO (First-Expired, First-Out) Engine**:
+  When a regional clinic or store requests stock, MedTrack searches active inventory across storage bins and atomically locks the earliest-expiring batch matching the requested dosage formulation.
+* **Inbound Shelf-Life Gatekeeping (AC-01)**:
+  Rejects any inbound batch with remaining shelf-life below 90 days (configurable) with an instant RFC 7807 `422 Unprocessable Entity` response.
 * **Idempotency & Replay Protection**:
   All financial and operational endpoints (`POST /stock-transfers`, `/allocate`, `/dispatch`, `/receive`) accept an `Idempotency-Key` header with SHA-256 payload verification.
-* **Automated Expiry & Delay Alarm Engine**:
-  * **Critical Expiry Alarm ($\le 30$ Days)**: Immediate high-priority quarantine flags.
-  * **Near Expiry Alarm ($31 - 90$ Days)**: Actionable alerts for stock movement or clinical priority.
-  * **Shipment Delay Alarm**: Telemetry monitors estimated vs actual milestones and alerts operators if transport is stalled.
-* **Barcode & Optical Scanner Interface**:
+* **Dual Alert & Telemetry Engine**:
+  * **Critical Expiry Alarm ($\le 30$ Days)**: High-priority flags and red indicators for immediate quarantine.
+  * **Near Expiry Alarm ($31 - 90$ Days)**: Actionable notifications for priority routing or redistribution.
+  * **Shipment Delay Alarm**: Real-time telemetry monitoring estimated vs. actual milestones, alerting operators if transport is stalled.
+* **Integrated Barcode & Optical Scanner**:
   Generates GS1-compatible 2D QR Codes and 1D Code-128 barcodes. Features an in-browser scanner with real-time identifier parsing and batch routing.
-* **Enterprise Reporting & Data Exports**:
+* **Enterprise Reporting & Streaming Exports**:
   Authoritative streaming CSV exports for physical balance sheets and near-expiry risk audits.
+
+---
+
+## 🔄 End-to-End Pharmaceutical Lifecycle
+
+MedTrack orchestrates the full pharmaceutical supply chain lifecycle across 7 deterministic stages:
+
+```text
+  [ 1. Inbound Receipt ]
+         │  (AC-01: Validates ≥ 90 days shelf-life at dock)
+         ▼
+  [ 2. Storage & 2D QR Labeling ]
+         │  (Generates GS1 QR Code & assigns warehouse storage bin)
+         ▼
+  [ 3. Stock Transfer Request ]
+         │  (Store manager initiates inter-depot replenishment)
+         ▼
+  [ 4. Automated FEFO Allocation ]
+         │  (System locks earliest-expiring viable stock batch)
+         ▼
+  [ 5. Pick, Pack & Manifest ]
+         │  (Warehouse manager confirms physical pick and seals container)
+         ▼
+  [ 6. Dispatch & Telemetry ]
+         │  (Debits Available -> Credits In-Transit; GPS tracking active)
+         ▼
+  [ 7. Destination Receipt ]
+            (Receiving store validates manifest -> Credits local balance)
+```
+
+---
+
+## 📊 Double-Entry Ledger Mechanics
+
+In MedTrack, inventory balances are never modified by direct arithmetic increments (`UPDATE inventory SET qty = qty + 10`). Instead, MedTrack models physical inventory using **financial double-entry accounting**:
+
+$$\text{Physical Inventory Balance} = \sum \text{Debits} - \sum \text{Credits}$$
+
+### Inventory Account Classification:
+
+| Account Type | Description | Normal Balance |
+| :--- | :--- | :--- |
+| `AVAILABLE` | Unreserved stock in storage bins ready for allocation | **Debit** |
+| `RESERVED` | Stock earmarked for an approved transfer order | **Debit** |
+| `QUARANTINED`| Stock suspended due to quality holds or critical expiry ($\le 30\text{d}$) | **Debit** |
+| `IN_TRANSIT` | Dispatched stock currently aboard transport vehicles | **Debit** |
+| `SUPPLIER` | External supplier source account | **Credit** |
+| `DISPENSATION`| Consumed or clinical issue offset account | **Credit** |
+
+Every inventory operation creates an immutable `InventoryJournalEntry` with corresponding balanced `InventoryLedgerLine` records.
 
 ---
 
@@ -127,7 +187,7 @@ Traditional inventory management systems frequently fail in pharmaceutical envir
 
 ```mermaid
 graph TD
-    subgraph Frontend ["Frontend (React 19 + TypeScript + Vite)"]
+    subgraph Frontend ["Frontend (React 19 + TypeScript + Vite 6)"]
         UI[App Shell & Command Palette]
         AuthUI[Auth & RBAC Guards]
         InvUI[Inbound Receiving & Stock View]
@@ -224,9 +284,9 @@ MedTrack/
 
 ### Prerequisites
 
-* **Java Development Kit (JDK)**: `Java 25 LTS` (`C:\Dev\Tools\jdk-25`)
+* **Java Development Kit (JDK)**: `Java 25 LTS` (e.g. `C:\Dev\Tools\jdk-25`)
 * **Apache Maven**: `3.9.x` or higher
-* **PostgreSQL**: `18.6` (`C:\Dev\Tools\pgsql-18.6`) running on port `5432`
+* **PostgreSQL**: `18.6` (e.g. `C:\Dev\Tools\pgsql-18.6`) running on port `5432`
 * **Node.js**: `v20.x` or `v22.x` (LTS)
 * **npm**: `v10.x` or higher
 
@@ -277,6 +337,16 @@ GRANT ALL PRIVILEGES ON DATABASE medtrack TO medtrack;
    npm run dev
    ```
    *The frontend application will be live at `http://localhost:5173`.*
+
+---
+
+### 4. Docker Compose Deployment
+
+To launch the complete MedTrack stack in isolated Docker containers:
+
+```bash
+docker compose -f infra/docker-compose.yml up --build -d
+```
 
 ---
 
@@ -349,7 +419,7 @@ Running 15 tests using 1 worker:
 
 ---
 
-## 📖 REST API & Specifications
+## 📖 REST API & OpenAPI Specification
 
 MedTrack exposes a fully documented, RFC 7807 compliant RESTful API:
 
@@ -373,7 +443,7 @@ MedTrack exposes a fully documented, RFC 7807 compliant RESTful API:
 
 ---
 
-## 🎨 UI/UX & Design System
+## 🎨 UI/UX, Accessibility & Design Tokens
 
 * **WCAG 2.1 AA Compliance**: All typography, badges, inputs, and interactive buttons exceed the 4.5:1 contrast ratio threshold in both Light and Dark modes.
 * **Command Palette (`Ctrl+K` / `⌘K`)**: Quick navigation, action execution, and CSV exports with auto-scrolling keyboard listbox navigation.
@@ -382,7 +452,20 @@ MedTrack exposes a fully documented, RFC 7807 compliant RESTful API:
 
 ---
 
-## 🔒 Security & Compliance
+## ⚙️ Environment Variables Reference
+
+| Variable | Default Value | Description |
+| :--- | :--- | :--- |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/medtrack` | PostgreSQL JDBC connection string |
+| `SPRING_DATASOURCE_USERNAME` | `medtrack` | PostgreSQL database user |
+| `SPRING_DATASOURCE_PASSWORD` | `medtrack` | PostgreSQL database password |
+| `MEDTRACK_JWT_SECRET` | `404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970` | 256-bit secret key for HMAC-SHA signing |
+| `MEDTRACK_JWT_EXPIRATION_MS` | `900000` (15 minutes) | JWT Access Token time-to-live |
+| `VITE_API_BASE_URL` | `http://localhost:8080/api/v1` | Backend API URL for Vite frontend |
+
+---
+
+## 🔒 Security & Regulatory Compliance
 
 * **Stateless Token RTR**: JWT access tokens have a short lifespan (15 minutes) paired with Single-Use Refresh Token Rotation (RTR). Replaying an old refresh token automatically invalidates the entire token family.
 * **Cryptographic Non-Repudiation**: Sensitive journal entries and audit trails generate immutable SHA-256 integrity checksums.
@@ -391,9 +474,11 @@ MedTrack exposes a fully documented, RFC 7807 compliant RESTful API:
 
 ---
 
-## 📄 License
+## 📄 License & Support
 
-MedTrack is licensed under the [MIT License](LICENSE).
+MedTrack is released under the [MIT License](LICENSE).
+
+For technical questions, bug reports, or architecture inquiries, please open an issue in this repository.
 
 ---
 
