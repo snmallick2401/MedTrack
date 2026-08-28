@@ -372,7 +372,7 @@ MedTrack/
 │   ├── architecture.md                   # System Architecture & C4 Models
 │   ├── design.md                         # Design System & Token Specifications
 │   ├── rules.md                          # Engineering Invariants & Coding Rules
-│   └── phases.md                         # Implementation Phase Breakdown
+│   └── roadmap.md                        # Implementation Roadmap & Phased Execution Plan
 │
 ├── infra/                                # Infrastructure & Containerization
 │   └── docker-compose.yml                # Multi-container orchestration
