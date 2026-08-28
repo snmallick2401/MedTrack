@@ -3,6 +3,7 @@ package com.medtrack.audit.controller;
 import com.medtrack.audit.dto.AuditLogResponse;
 import com.medtrack.audit.repository.AuditQueryRepository;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,5 +24,13 @@ public class AuditController {
     ) {
         return logs.findAll(PageRequest.of(page, Math.min(100, Math.max(1, size)), Sort.by(Sort.Direction.DESC, "createdAt")))
                    .map(AuditLogResponse::of);
+    }
+
+    @RequestMapping(
+        value = {"", "/**"},
+        method = {RequestMethod.POST, RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.DELETE}
+    )
+    public void rejectAuditLogMutation() {
+        throw new AccessDeniedException("Audit logs are immutable GxP records and cannot be modified or deleted");
     }
 }
