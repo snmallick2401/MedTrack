@@ -4,6 +4,8 @@
 
 ### Enterprise Pharmaceutical Inventory, Transportation & Cold-Chain Tracking Platform
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-00BFA5?style=for-the-badge&logo=render&logoColor=white)](https://medtrack-frontend-7yhw.onrender.com)
+[![Backend API](https://img.shields.io/badge/Backend%20API-Live-6DB33F?style=for-the-badge&logo=spring&logoColor=white)](https://medtrack-backend-45zt.onrender.com/actuator/health)
 [![CI Pipeline](https://github.com/snmallick2401/MedTrack/actions/workflows/ci.yml/badge.svg)](https://github.com/snmallick2401/MedTrack/actions/workflows/ci.yml)
 [![Java 25 LTS](https://img.shields.io/badge/Java-25%20LTS-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot 4.1.1](https://img.shields.io/badge/Spring%20Boot-4.1.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -12,7 +14,7 @@
 [![TypeScript 5.9](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite 6](https://img.shields.io/badge/Vite-6.4.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS 3.4](https://img.shields.io/badge/Tailwind%20CSS-3.4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![Playwright 1.58](https://img.shields.io/badge/Playwright-1.58-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
+[![Playwright 1.62](https://img.shields.io/badge/Playwright-1.62-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
 [![GxP / FDA 21 CFR Part 11](https://img.shields.io/badge/Compliance-GxP%20%7C%2021%20CFR%20Part%2011-blue?style=for-the-badge)](https://www.fda.gov/)
 [![OpenAPI 3.1](https://img.shields.io/badge/OpenAPI-3.1-85EA2D?style=for-the-badge&logo=openapiinitiative&logoColor=black)](docs/api/openapi.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
@@ -22,7 +24,7 @@
   Featuring double-entry ledger accounting, automated FEFO allocation, minimum shelf-life enforcement, 2D QR / Code-128 labeling, in-browser optical scanning, real-time transportation telemetry, and cryptographic audit trails.
 </p>
 
-[System Architecture](docs/architecture.md) • [API Specification](docs/api/openapi.yaml) • [Database Schema](docs/database/erd.md) • [Getting Started](#-getting-started) • [Personas & Logins](#-pre-seeded-roles--personas)
+[🌐 Live Web Application](https://medtrack-frontend-7yhw.onrender.com) • [🖥️ Live Screenshots](#%EF%B8%8F-live-application-preview--screenshots) • [System Architecture](docs/architecture.md) • [API Specification](docs/api/openapi.yaml) • [Database Schema](docs/database/erd.md) • [Getting Started](#-getting-started) • [Personas & Logins](#-pre-seeded-roles--personas)
 
 </div>
 
@@ -31,6 +33,7 @@
 ## 📑 Table of Contents
 
 - [Overview](#-overview)
+- [Live Application Preview & Screenshots](#%EF%B8%8F-live-application-preview--screenshots)
 - [Key Architectural Capabilities](#-key-architectural-capabilities)
 - [End-to-End Pharmaceutical Lifecycle](#-end-to-end-pharmaceutical-lifecycle)
 - [Double-Entry Ledger Mechanics](#-double-entry-ledger-mechanics)
@@ -74,6 +77,24 @@
 * **Audit Trail Tampering**: Mutable audit records that fail stringent regulatory inspections.
 
 MedTrack eliminates these vulnerabilities through mathematical ledger invariants, automated FEFO reservation engines, optical barcode tooling, and immutable cryptographic audit logging.
+
+---
+
+## 🖥️ Live Application Preview & Screenshots
+
+<div align="center">
+
+| **Operations Command Dashboard** | **3-Bucket Inventory Balances** |
+|:---:|:---:|
+| [![Operations Dashboard](docs/assets/dashboard.png)](https://medtrack-frontend-7yhw.onrender.com) | [![Inventory Balances](docs/assets/inventory.png)](https://medtrack-frontend-7yhw.onrender.com) |
+| *Real-time KPI summaries, near-expiry alerts, and workflow action triggers.* | *Real-time Available, Reserved, and Quarantined stock with warehouse switching.* |
+
+| **Shipments & Logistics Dispatch** | **Secure Multi-Role Authentication** |
+|:---:|:---:|
+| [![Shipments View](docs/assets/shipments.png)](https://medtrack-frontend-7yhw.onrender.com) | [![Login Screen](docs/assets/login.png)](https://medtrack-frontend-7yhw.onrender.com) |
+| *Carrier dispatch manifests, waypoint telemetry, and transport tracking.* | *Stateless JWT authentication with Refresh Token Rotation (RTR) and RBAC.* |
+
+</div>
 
 ---
 
@@ -368,6 +389,7 @@ MedTrack/
 │   └── vite.config.ts
 │
 ├── docs/                                 # Full Architectural Documentation
+│   ├── assets/                           # Live Application UI Screenshots & Visual Assets
 │   ├── architecture.md                   # System Architecture & C4 Models
 │   ├── api/openapi.yaml                  # OpenAPI 3.1 REST API Contract
 │   ├── database/erd.md                   # Database Entity-Relationship Diagram (ERD)
