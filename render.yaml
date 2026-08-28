@@ -9,10 +9,18 @@ services:
     plan: free
     healthCheckPath: /actuator/health
     envVars:
-      - key: DATABASE_URL
+      - key: DB_HOST
         fromDatabase:
           name: medtrack-postgres
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: medtrack-postgres
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: medtrack-postgres
+          property: database
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: medtrack-postgres
