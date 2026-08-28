@@ -9,23 +9,15 @@ services:
     plan: free
     healthCheckPath: /actuator/health
     envVars:
-      - key: DB_HOST
+      - key: DATABASE_URL
         fromDatabase:
           name: medtrack-postgres
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: medtrack-postgres
-          property: port
-      - key: DB_NAME
-        fromDatabase:
-          name: medtrack-postgres
-          property: database
-      - key: DB_USERNAME
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: medtrack-postgres
           property: user
-      - key: DB_PASSWORD
+      - key: SPRING_DATASOURCE_PASSWORD
         fromDatabase:
           name: medtrack-postgres
           property: password
@@ -39,12 +31,17 @@ services:
         value: "900000"
       - key: MEDTRACK_COOKIE_SECURE
         value: "true"
+      - key: CORS_ALLOWED_ORIGINS
+        fromService:
+          name: medtrack-frontend
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
 
   # React 19 + Vite 6 Frontend Static Site
   - type: web
     name: medtrack-frontend
     runtime: static
-    buildCommand: cd frontend && npm install && npm run build
+    buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: ./frontend/dist
     routes:
       - type: rewrite
@@ -62,5 +59,7 @@ databases:
   - name: medtrack-postgres
     # Free PostgreSQL expires after 30 days and has no backups; use a paid plan for production.
     plan: free
+    postgresMajorVersion: "18"
     databaseName: medtrack
     user: medtrack
+    ipAllowList: []
