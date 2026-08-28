@@ -5,7 +5,8 @@
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    plan: starter
+    # Free is suitable for testing only; upgrade this service for production.
+    plan: free
     healthCheckPath: /actuator/health
     envVars:
       - key: DATABASE_URL
@@ -51,6 +52,7 @@
 databases:
   # Managed PostgreSQL Database
   - name: medtrack-postgres
-    plan: starter
+    # Free PostgreSQL expires after 30 days and has no backups; use a paid plan for production.
+    plan: free
     databaseName: medtrack
     user: medtrack
