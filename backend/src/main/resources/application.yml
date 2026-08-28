@@ -1,9 +1,9 @@
 spring:
   application.name: medtrack
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/medtrack}
-    username: ${DB_USERNAME:medtrack}
-    password: ${DB_PASSWORD:medtrack}
+    url: ${SPRING_DATASOURCE_URL:${DB_URL:jdbc:postgresql://localhost:5432/medtrack}}
+    username: ${SPRING_DATASOURCE_USERNAME:${DB_USERNAME:medtrack}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:medtrack}}
   jpa:
     hibernate.ddl-auto: validate
     open-in-view: false
@@ -18,10 +18,10 @@ management:
   endpoint.health.probes.enabled: true
 medtrack:
   jwt:
-    secret: ${JWT_SECRET:change-this-local-development-secret-to-a-minimum-of-32-characters}
+    secret: ${MEDTRACK_JWT_SECRET:${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}}
     access-token-minutes: ${JWT_ACCESS_TOKEN_MINUTES:15}
     refresh-token-days: ${JWT_REFRESH_TOKEN_DAYS:7}
-  cors.allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  cors.allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost,https://*}
 springdoc:
   api-docs.path: /api-docs
   swagger-ui.path: /swagger-ui.html

@@ -1,0 +1,46 @@
+﻿services:
+  # Spring Boot 4.1.1 Backend Web Service
+  - type: web
+    name: medtrack-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: medtrack-postgres
+          property: connectionString
+      - key: SPRING_FLYWAY_ENABLED
+        value: "true"
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: validate
+      - key: MEDTRACK_JWT_SECRET
+        generateValue: true
+      - key: MEDTRACK_JWT_EXPIRATION_MS
+        value: "900000"
+
+  # React 19 + Vite 6 Frontend Static Site
+  - type: web
+    name: medtrack-frontend
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: medtrack-backend
+          property: host
+          value: https://${host}/api/v1
+
+databases:
+  # Managed PostgreSQL Database
+  - name: medtrack-postgres
+    plan: starter
+    databaseName: medtrack
+    user: medtrack

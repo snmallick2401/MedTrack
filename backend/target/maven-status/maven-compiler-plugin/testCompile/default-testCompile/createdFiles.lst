@@ -1,6 +1,0 @@
-com\medtrack\tracking\Phase4AlertsAndReportsTest.class
-com\medtrack\batch\service\BatchServiceTest.class
-com\medtrack\inventory\entity\InventoryBalanceConcurrencyTest.class
-com\medtrack\transfer\service\StockTransferLifecycleTest.class
-com\medtrack\transfer\entity\TransferStateMachineTest.class
-com\medtrack\inventory\service\FefoAllocationEngineTest.class
