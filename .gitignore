@@ -1,0 +1,32 @@
+# Build & Dependency Artifacts
+backend/target/
+frontend/dist/
+frontend/node_modules/
+frontend/.turbo/
+frontend/test-results/
+frontend/playwright-report/
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.local
+
+# IDE & Editor Configs
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & Temporary Files
+*.log

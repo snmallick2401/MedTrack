@@ -1,7 +1,7 @@
 spring:
   application.name: medtrack
   datasource:
-    url: ${SPRING_DATASOURCE_URL:${DB_URL:jdbc:postgresql://localhost:5432/medtrack}}
+    url: ${SPRING_DATASOURCE_URL:jdbc:${DATABASE_URL:${DB_URL:postgresql://localhost:5432/medtrack}}}
     username: ${SPRING_DATASOURCE_USERNAME:${DB_USERNAME:medtrack}}
     password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:medtrack}}
   jpa:
@@ -17,6 +17,7 @@ management:
   endpoints.web.exposure.include: health
   endpoint.health.probes.enabled: true
 medtrack:
+  cookie.secure: ${MEDTRACK_COOKIE_SECURE:false}
   jwt:
     secret: ${MEDTRACK_JWT_SECRET:${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}}
     access-token-minutes: ${JWT_ACCESS_TOKEN_MINUTES:15}

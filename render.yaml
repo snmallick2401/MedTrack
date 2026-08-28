@@ -6,11 +6,20 @@
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     plan: starter
+    healthCheckPath: /actuator/health
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DATABASE_URL
         fromDatabase:
           name: medtrack-postgres
           property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: medtrack-postgres
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: medtrack-postgres
+          property: password
       - key: SPRING_FLYWAY_ENABLED
         value: "true"
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
@@ -19,6 +28,8 @@
         generateValue: true
       - key: MEDTRACK_JWT_EXPIRATION_MS
         value: "900000"
+      - key: MEDTRACK_COOKIE_SECURE
+        value: "true"
 
   # React 19 + Vite 6 Frontend Static Site
   - type: web
@@ -33,10 +44,9 @@
     envVars:
       - key: VITE_API_BASE_URL
         fromService:
-          type: web
           name: medtrack-backend
-          property: host
-          value: https://${host}/api/v1
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
 
 databases:
   # Managed PostgreSQL Database
