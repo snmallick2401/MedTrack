@@ -85,13 +85,19 @@ class Phase4AlertsAndReportsTest {
                         warehouseRepository.save(new Warehouse("RW-TEST-P4", "Regional Test P4", WarehouseType.DISTRIBUTION_STORE, "200 Market St", null, null, "+2000", WarehouseStatus.ACTIVE))
                 );
 
-        centralBin = storageLocationRepository.findByWarehouse_Id(centralWarehouse.getId()).stream().findFirst().orElseThrow();
+        centralBin = storageLocationRepository.findByWarehouse_Id(centralWarehouse.getId()).stream().findFirst().orElseGet(() ->
+                storageLocationRepository.save(new StorageLocation(centralWarehouse, "ZONE-C4", "RACK-01", "SHELF-01", "BIN-CW-P4"))
+        );
         regionalBin = storageLocationRepository.findByWarehouse_Id(regionalWarehouse.getId()).stream().findFirst().orElseGet(() ->
                 storageLocationRepository.save(new StorageLocation(regionalWarehouse, "ZONE-R4", "RACK-01", "SHELF-01", "BIN-RW-P4"))
         );
 
-        supplier = supplierRepository.findAll().stream().findFirst().orElseThrow();
-        category = categoryRepository.findAll().stream().findFirst().orElseThrow();
+        supplier = supplierRepository.findAll().stream().findFirst().orElseGet(() ->
+                supplierRepository.save(new Supplier("PharmaCorp Global", "SUP-PHARMA-01", "orders@pharmacorp.local", "+1-555-0199", "100 Pharma Blvd, Boston, MA"))
+        );
+        category = categoryRepository.findAll().stream().findFirst().orElseGet(() ->
+                categoryRepository.save(new MedicineCategory("ANTIBIOTIC", "Antibiotic", "Antibiotic medications"))
+        );
     }
 
     @Test

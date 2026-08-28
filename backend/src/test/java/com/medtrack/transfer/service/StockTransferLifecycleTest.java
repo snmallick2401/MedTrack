@@ -75,15 +75,21 @@ class StockTransferLifecycleTest {
             );
 
         centralBin = storageLocationRepository.findByWarehouse_Id(centralWarehouse.getId()).stream()
-            .findFirst().orElseThrow();
+            .findFirst().orElseGet(() ->
+                storageLocationRepository.save(new StorageLocation(centralWarehouse, "ZONE-C", "RACK-01", "SHELF-01", "BIN-CW-01"))
+            );
 
         regionalBin = storageLocationRepository.findByWarehouse_Id(regionalWarehouse.getId()).stream()
             .findFirst().orElseGet(() ->
                 storageLocationRepository.save(new StorageLocation(regionalWarehouse, "ZONE-R", "RACK-01", "SHELF-01", "BIN-RW-01"))
             );
 
-        supplier = supplierRepository.findAll().stream().findFirst().orElseThrow();
-        category = categoryRepository.findAll().stream().findFirst().orElseThrow();
+        supplier = supplierRepository.findAll().stream().findFirst().orElseGet(() ->
+            supplierRepository.save(new Supplier("PharmaCorp Global", "SUP-PHARMA-01", "orders@pharmacorp.local", "+1-555-0199", "100 Pharma Blvd, Boston, MA"))
+        );
+        category = categoryRepository.findAll().stream().findFirst().orElseGet(() ->
+            categoryRepository.save(new MedicineCategory("ANTIBIOTIC", "Antibiotic", "Antibiotic medications"))
+        );
     }
 
     @Test
