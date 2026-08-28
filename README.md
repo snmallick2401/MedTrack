@@ -1,9 +1,10 @@
-﻿<div align="center">
+<div align="center">
 
 # 💊 MedTrack
 
 ### Enterprise Pharmaceutical Inventory, Transportation & Cold-Chain Tracking Platform
 
+[![CI Pipeline](https://github.com/snmallick2401/MedTrack/actions/workflows/ci.yml/badge.svg)](https://github.com/snmallick2401/MedTrack/actions/workflows/ci.yml)
 [![Java 25 LTS](https://img.shields.io/badge/Java-25%20LTS-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot 4.1.1](https://img.shields.io/badge/Spring%20Boot-4.1.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![PostgreSQL 18.6](https://img.shields.io/badge/PostgreSQL-18.6-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
@@ -12,14 +13,16 @@
 [![Vite 6](https://img.shields.io/badge/Vite-6.4.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS 3.4](https://img.shields.io/badge/Tailwind%20CSS-3.4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Playwright 1.58](https://img.shields.io/badge/Playwright-1.58-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![GxP / FDA 21 CFR Part 11](https://img.shields.io/badge/Compliance-GxP%20%7C%2021%20CFR%20Part%2011-blue?style=for-the-badge)](https://www.fda.gov/)
+[![OpenAPI 3.1](https://img.shields.io/badge/OpenAPI-3.1-85EA2D?style=for-the-badge&logo=openapiinitiative&logoColor=black)](docs/api/openapi.yaml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 <p align="center">
   <b>Enterprise-grade, GxP-compliant pharmaceutical inventory management and inter-facility logistics.</b><br/>
   Featuring double-entry ledger accounting, automated FEFO allocation, minimum shelf-life enforcement, 2D QR / Code-128 labeling, in-browser optical scanning, real-time transportation telemetry, and cryptographic audit trails.
 </p>
 
-[Explore Documentation](docs/prd.md) • [View Architecture](docs/architecture.md) • [API Contract](docs/api/openapi.yaml) • [Getting Started](#-getting-started)
+[Explore Documentation](docs/prd.md) • [System Architecture](docs/architecture.md) • [API Specification](docs/api/openapi.yaml) • [Getting Started](#-getting-started) • [Personas & Logins](#-pre-seeded-roles--personas)
 
 </div>
 
@@ -31,12 +34,16 @@
 - [Key Architectural Capabilities](#-key-architectural-capabilities)
 - [End-to-End Pharmaceutical Lifecycle](#-end-to-end-pharmaceutical-lifecycle)
 - [Double-Entry Ledger Mechanics](#-double-entry-ledger-mechanics)
+- [System Architecture & Visual Diagrams](#-system-architecture--visual-diagrams)
+  - [1. Component & Container Architecture](#1-component--container-architecture)
+  - [2. Ledger Journal Balance Flow](#2-ledger-journal-balance-flow)
+  - [3. Transfer & Shipment State Machine](#3-transfer--shipment-state-machine)
+  - [4. Refresh Token Rotation (RTR) Sequence](#4-refresh-token-rotation-rtr-sequence)
 - [Technology Baseline](#-technology-baseline)
-- [System Architecture](#-system-architecture)
 - [Repository Structure](#-repository-structure)
 - [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
-  - [1. Database Configuration](#1-database-configuration)
+  - [1. Database Setup](#1-database-setup)
   - [2. Backend Setup](#2-backend-setup)
   - [3. Frontend Setup](#3-frontend-setup)
   - [4. Docker Compose Deployment](#4-docker-compose-deployment)
@@ -45,7 +52,9 @@
   - [Automated Backend Suite](#automated-backend-suite)
   - [Frontend Component Tests](#frontend-component-tests)
   - [Playwright End-to-End Suite](#playwright-end-to-end-suite)
-- [REST API & OpenAPI Specification](#-rest-api--openapi-specification)
+- [REST API Reference & OpenAPI Specification](#-rest-api-reference--openapi-specification)
+- [Optical Barcodes & GS1 Labeling](#-optical-barcodes--gs1-labeling)
+- [Cold-Chain & Telemetry Tracking](#-cold-chain--telemetry-tracking)
 - [UI/UX, Accessibility & Design Tokens](#-uiux-accessibility--design-tokens)
 - [Environment Variables Reference](#-environment-variables-reference)
 - [Security & Regulatory Compliance](#-security--regulatory-compliance)
@@ -55,11 +64,11 @@
 
 ## 🌟 Overview
 
-**MedTrack** is an enterprise-tier operational management platform engineered specifically for healthcare systems, regional pharmaceutical repositories, and multi-depot distribution networks. It strictly enforces pharmaceutical supply chain integrity (GxP / FDA 21 CFR Part 11) across procurement, storage bin allocation, order fulfillment, and inter-facility transit.
+**MedTrack** is an enterprise-tier operational management platform engineered specifically for healthcare systems, regional pharmaceutical repositories, hospital networks, and multi-depot distribution facilities. It strictly enforces pharmaceutical supply chain integrity (GxP / FDA 21 CFR Part 11) across procurement, storage bin allocation, order fulfillment, and inter-facility transit.
 
 ### Why Standard ERP / Inventory Systems Fail for Pharmaceuticals:
 * **Negative Stock Balances**: Race conditions in high-throughput distribution centers create phantom inventory.
-* **Expired Medication Dispensation**: Inability to enforce atomic First-Expired, First-Out (FEFO) rules leading to clinical non-compliance and financial waste.
+* **Expired Medication Dispensation**: Inability to enforce atomic First-Expired, First-Out (FEFO) rules leading to clinical non-compliance and catastrophic financial waste.
 * **Substandard Inbound Receiving**: Lack of automated minimum shelf-life validation at the dock door.
 * **Untracked Cold-Chain & In-Transit Delays**: Zero real-time telemetry or milestone delay alerting during transportation.
 * **Audit Trail Tampering**: Mutable audit records that fail stringent regulatory inspections.
@@ -142,16 +151,153 @@ $$\text{Physical Inventory Balance} = \sum \text{Debits} - \sum \text{Credits}$$
 
 ### Inventory Account Classification:
 
-| Account Type | Description | Normal Balance |
-| :--- | :--- | :--- |
-| `AVAILABLE` | Unreserved stock in storage bins ready for allocation | **Debit** |
-| `RESERVED` | Stock earmarked for an approved transfer order | **Debit** |
-| `QUARANTINED`| Stock suspended due to quality holds or critical expiry ($\le 30\text{d}$) | **Debit** |
-| `IN_TRANSIT` | Dispatched stock currently aboard transport vehicles | **Debit** |
-| `SUPPLIER` | External supplier source account | **Credit** |
-| `DISPENSATION`| Consumed or clinical issue offset account | **Credit** |
+| Account Type | Description | Normal Balance | Scope |
+| :--- | :--- | :--- | :--- |
+| `AVAILABLE` | Unreserved stock in storage bins ready for allocation | **Debit** | Warehouse Specific |
+| `RESERVED` | Stock earmarked for an approved transfer order | **Debit** | Warehouse Specific |
+| `QUARANTINED`| Stock suspended due to quality holds or critical expiry ($\le 30\text{d}$) | **Debit** | Warehouse Specific |
+| `IN_TRANSIT` | Dispatched stock currently aboard transport vehicles | **Debit** | Global Transit Pool |
+| `SUPPLIER_OFFSET` | Virtual supplier equity offset account | **Credit** | External Equity |
+| `DISPENSATION`| Consumed or clinical issue offset account | **Credit** | Clinical Issue |
 
-Every inventory operation creates an immutable `InventoryJournalEntry` with corresponding balanced `InventoryLedgerLine` records.
+---
+
+## 🏛️ System Architecture & Visual Diagrams
+
+### 1. Component & Container Architecture
+
+```mermaid
+graph TD
+    subgraph Frontend ["Frontend (React 19 + TypeScript + Vite 6)"]
+        UI[App Shell & Command Palette]
+        AuthUI[Auth & RBAC Guards]
+        InvUI[Inbound Receiving & Stock View]
+        TrfUI[Stock Transfers & FEFO Workbench]
+        ScanUI[2D QR / Code-128 Scanner]
+        RepUI[Near-Expiry & CSV Reports]
+    end
+
+    subgraph Backend ["Backend (Spring Boot 4.1.1 - Java 25 LTS)"]
+        API[Spring MVC REST API Controller]
+        Sec[Spring Security 7 & JWT Filter]
+        Idem[Idempotency Engine & Hash Verifier]
+        Ledger[Double-Entry Inventory Ledger Service]
+        FEFO[FEFO Allocation & Reservation Engine]
+        Ship[Shipment & Telemetry Engine]
+        Alert[Automated Expiry & Delay Worker]
+        Audit[Cryptographic Audit Trail Engine]
+    end
+
+    subgraph Storage ["Database (PostgreSQL 18.6)"]
+        Flyway[Flyway Migrations V1-V7]
+        DB_Ledger[(Inventory Journals & Balances)]
+        DB_Master[(Medicines, Batches, Warehouses)]
+        DB_Transfers[(Stock Transfers & Shipments)]
+        DB_Audit[(Immutable Audit Logs)]
+    end
+
+    UI --> Sec
+    Sec --> API
+    API --> Idem
+    Idem --> Ledger
+    Idem --> FEFO
+    Idem --> Ship
+    Alert --> Ledger
+    Ledger --> DB_Ledger
+    FEFO --> DB_Ledger
+    Ship --> DB_Transfers
+    Audit --> DB_Audit
+```
+
+---
+
+### 2. Ledger Journal Balance Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Op as Warehouse Operator
+    participant API as Inbound / Transfer API
+    participant Engine as Ledger Journal Engine
+    participant DB as PostgreSQL Ledger Lines
+
+    Note over Op,DB: 1. Inbound Batch Receiving
+    Op->>API: POST /api/v1/inbound-receipts (Qty: 500)
+    API->>Engine: Create Journal Entry (INBOUND_RECEIPT)
+    Engine->>DB: INSERT Credit Line (SUPPLIER_OFFSET, Qty: 500)
+    Engine->>DB: INSERT Debit Line (AVAILABLE_STOCK, Qty: 500)
+    DB-->>API: Transaction Committed (Zero Sum Balanced)
+
+    Note over Op,DB: 2. Dispatch to In-Transit
+    Op->>API: POST /api/v1/shipments/{id}/dispatch (Qty: 100)
+    API->>Engine: Create Journal Entry (SHIPMENT_DISPATCH)
+    Engine->>DB: INSERT Credit Line (AVAILABLE_STOCK, Qty: 100)
+    Engine->>DB: INSERT Debit Line (IN_TRANSIT_STOCK, Qty: 100)
+    DB-->>API: Transaction Committed (Available Reduced, Transit Increased)
+
+    Note over Op,DB: 3. Destination Receipt
+    Op->>API: POST /api/v1/shipments/{id}/receive (Qty: 100)
+    API->>Engine: Create Journal Entry (SHIPMENT_RECEIVE)
+    Engine->>DB: INSERT Credit Line (IN_TRANSIT_STOCK, Qty: 100)
+    Engine->>DB: INSERT Debit Line (DESTINATION_AVAILABLE, Qty: 100)
+    DB-->>API: Transfer Finalized & Closed
+```
+
+---
+
+### 3. Transfer & Shipment State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> REQUESTED: Store Manager initiates Transfer Request
+    REQUESTED --> ALLOCATED: FEFO Engine locks earliest batch
+    REQUESTED --> CANCELLED: Cancelled before allocation
+    
+    ALLOCATED --> PICKED: Warehouse Manager confirms physical pick
+    ALLOCATED --> CANCELLED: Allocation released
+
+    PICKED --> DISPATCHED: Manifest sealed & Vehicle loaded
+    DISPATCHED --> IN_TRANSIT: In-Transit Ledger debited & GPS active
+
+    IN_TRANSIT --> DELAYED: Stalled milestone / Telemetry alert
+    DELAYED --> IN_TRANSIT: Driver resumes transit route
+
+    IN_TRANSIT --> DELIVERED: Vehicle arrives at destination dock
+    DELIVERED --> RECEIVED: Receiving Manager confirms manifest
+    DELIVERED --> QUARANTINED: Damaged seals or cold-chain breach
+
+    RECEIVED --> [*]
+    QUARANTINED --> [*]
+    CANCELLED --> [*]
+```
+
+---
+
+### 4. Refresh Token Rotation (RTR) Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Client as React Client (Browser)
+    participant Auth as Spring Security Filter
+    participant DB as PostgreSQL Token Store
+
+    Client->>Auth: POST /api/v1/auth/login (Credentials)
+    Auth->>DB: Generate Token Family (UUID), Store Hashed Refresh Token
+    Auth-->>Client: Return 15-min Access JWT + HttpOnly Cookie (Refresh Token 1)
+
+    Note over Client,DB: Token Refresh Request
+    Client->>Auth: POST /api/v1/auth/refresh (Cookie: Refresh Token 1)
+    Auth->>DB: Verify & Mark Refresh Token 1 as REVOKED
+    Auth->>DB: Insert Refresh Token 2 (Same Family ID)
+    Auth-->>Client: Return New Access JWT + HttpOnly Cookie (Refresh Token 2)
+
+    Note over Client,DB: Malicious Replay Attempt (Reusing Token 1)
+    Client->>Auth: POST /api/v1/auth/refresh (Cookie: Stolen Refresh Token 1)
+    Auth->>DB: Detect REVOKED Token Replay!
+    Auth->>DB: SECURITY ALARM: Invalidate ENTIRE Token Family!
+    Auth-->>Client: 401 Unauthorized (Forces attacker & user to re-login)
+```
 
 ---
 
@@ -183,58 +329,11 @@ Every inventory operation creates an immutable `InventoryJournalEntry` with corr
 
 ---
 
-## 🏛️ System Architecture
-
-```mermaid
-graph TD
-    subgraph Frontend ["Frontend (React 19 + TypeScript + Vite 6)"]
-        UI[App Shell & Command Palette]
-        AuthUI[Auth & RBAC Guards]
-        InvUI[Inbound Receiving & Stock View]
-        TrfUI[Stock Transfers & FEFO Workbench]
-        ScanUI[2D QR / Code-128 Scanner]
-        RepUI[Near-Expiry & CSV Reports]
-    end
-
-    subgraph Backend ["Backend (Spring Boot 4.1.1 - Java 25 LTS)"]
-        API[Spring MVC REST API Controller]
-        Sec[Spring Security 7 & JWT Filter]
-        Idem[Idempotency Engine & Hash Verifier]
-        Ledger[Double-Entry Inventory Ledger Service]
-        FEFO[FEFO Allocation & Reservation Engine]
-        Ship[Shipment & Telemetry Engine]
-        Alert[Automated Expiry & Delay Worker]
-        Audit[Cryptographic Audit Trail Engine]
-    end
-
-    subgraph Storage ["Database (PostgreSQL 18.6)"]
-        Flyway[Flyway Schema V1-V7]
-        DB_Ledger[(Inventory Journals & Balances)]
-        DB_Master[(Medicines, Batches, Warehouses)]
-        DB_Transfers[(Stock Transfers & Shipments)]
-        DB_Audit[(Immutable Audit Logs)]
-    end
-
-    UI --> Sec
-    Sec --> API
-    API --> Idem
-    Idem --> Ledger
-    Idem --> FEFO
-    Idem --> Ship
-    Alert --> Ledger
-    Ledger --> DB_Ledger
-    FEFO --> DB_Ledger
-    Ship --> DB_Transfers
-    Audit --> DB_Audit
-```
-
----
-
 ## 🗂️ Repository Structure
 
 ```text
 MedTrack/
-├── backend/                              # Spring Boot 4.1.1 REST API
+├── backend/                              # Spring Boot 4.1.1 REST API (Java 25 LTS)
 │   ├── src/main/java/com/medtrack/
 │   │   ├── audit/                        # Cryptographic audit logging & hash verification
 │   │   ├── auth/                         # JWT authentication, user credentials, RBAC
@@ -250,11 +349,11 @@ MedTrack/
 │   │   └── transfer/                     # Inter-warehouse stock transfers & FEFO allocation
 │   ├── src/main/resources/
 │   │   ├── db/migration/                 # Flyway migrations V1 to V7
-│   │   └── application.properties        # Database, JWT, and server configurations
+│   │   └── application.yml               # Database, JWT, and server configurations
 │   ├── pom.xml                           # Maven dependencies & build plugins
 │   └── Dockerfile
 │
-├── frontend/                             # React 19 + TypeScript SPA
+├── frontend/                             # React 19 + TypeScript SPA (Vite 6)
 │   ├── src/
 │   │   ├── components/                   # AppShell, CommandPalette, StatusBadge, States
 │   │   ├── features/                     # Feature modules (auth, dashboard, inventory,
@@ -275,6 +374,11 @@ MedTrack/
 │   ├── rules.md                          # Engineering Invariants & Coding Rules
 │   └── phases.md                         # Implementation Phase Breakdown
 │
+├── infra/                                # Infrastructure & Containerization
+│   └── docker-compose.yml                # Multi-container orchestration
+│
+├── .github/workflows/
+│   └── ci.yml                            # GitHub Actions Automated CI Pipeline
 └── README.md                             # Project Documentation & Getting Started
 ```
 
@@ -284,15 +388,15 @@ MedTrack/
 
 ### Prerequisites
 
-* **Java Development Kit (JDK)**: `Java 25 LTS` (e.g. `C:\Dev\Tools\jdk-25`)
+* **Java Development Kit (JDK)**: `Java 25 LTS` (or compatible JDK)
 * **Apache Maven**: `3.9.x` or higher
-* **PostgreSQL**: `18.6` (e.g. `C:\Dev\Tools\pgsql-18.6`) running on port `5432`
+* **PostgreSQL**: `16+` or `18.6` running on port `5432`
 * **Node.js**: `v20.x` or `v22.x` (LTS)
 * **npm**: `v10.x` or higher
 
 ---
 
-### 1. Database Configuration
+### 1. Database Setup
 
 Create the PostgreSQL database and user:
 
@@ -307,15 +411,15 @@ GRANT ALL PRIVILEGES ON DATABASE medtrack TO medtrack;
 ### 2. Backend Setup
 
 1. Navigate to the backend directory:
-   ```powershell
+   ```bash
    cd backend
    ```
-2. Build and run database migrations:
-   ```powershell
-   mvn clean package -DskipTests
+2. Build the JAR package and run unit tests:
+   ```bash
+   mvn clean package -DskipTests=false
    ```
 3. Start the Spring Boot application:
-   ```powershell
+   ```bash
    java -jar target/medtrack-backend-0.0.1-SNAPSHOT.jar
    ```
    *The backend will start at `http://localhost:8080` and automatically apply Flyway migrations V1–V7.*
@@ -325,15 +429,15 @@ GRANT ALL PRIVILEGES ON DATABASE medtrack TO medtrack;
 ### 3. Frontend Setup
 
 1. Navigate to the frontend directory:
-   ```powershell
+   ```bash
    cd frontend
    ```
 2. Install npm dependencies:
-   ```powershell
+   ```bash
    npm install
    ```
 3. Start the Vite development server:
-   ```powershell
+   ```bash
    npm run dev
    ```
    *The frontend application will be live at `http://localhost:5173`.*
@@ -342,19 +446,26 @@ GRANT ALL PRIVILEGES ON DATABASE medtrack TO medtrack;
 
 ### 4. Docker Compose Deployment
 
-To launch the complete MedTrack stack in isolated Docker containers:
+To launch the complete MedTrack ecosystem (PostgreSQL + Spring Boot Backend + React Frontend) in isolated Docker containers:
 
 ```bash
 docker compose -f infra/docker-compose.yml up --build -d
 ```
 
+| Service | Port | Endpoint URL |
+| :--- | :--- | :--- |
+| **Frontend Web App** | `80` | `http://localhost` |
+| **Backend REST API** | `8080` | `http://localhost:8080` |
+| **PostgreSQL Database** | `5432` | `localhost:5432` |
+| **Swagger UI Documentation**| `8080` | `http://localhost:8080/swagger-ui.html` |
+
 ---
 
 ## 👥 Pre-Seeded Roles & Personas
 
-MedTrack includes 5 pre-seeded role accounts for development, testing, and compliance demonstration:
+MedTrack includes 5 pre-configured personas for testing role-based access control (RBAC):
 
-| Email Address | Default Password | Role | Operational Responsibilities |
+| Email Address | Password | Role | Operational Responsibilities |
 | :--- | :--- | :--- | :--- |
 | `admin@medtrack.local` | `ChangeMe123!` | `SUPER_ADMIN` | Global master data, warehouse setup, user management, audit review |
 | `warehouse@medtrack.local` | `ChangeMe123!` | `CENTRAL_WAREHOUSE_MANAGER` | Inbound receiving, storage bin mapping, FEFO pick/pack, dispatch |
@@ -370,7 +481,7 @@ MedTrack enforces continuous test verification across every architectural tier:
 
 ### Automated Backend Suite
 Executes Spring Boot integration tests, Flyway migrations, double-entry ledger calculations, and security authorization checks:
-```powershell
+```bash
 cd backend
 mvn clean test
 ```
@@ -380,7 +491,7 @@ mvn clean test
 
 ### Frontend Component Tests
 Executes Vitest and React Testing Library unit/component specifications:
-```powershell
+```bash
 cd frontend
 npm test
 ```
@@ -390,7 +501,7 @@ npm test
 
 ### Playwright End-to-End Suite
 Executes 15 comprehensive browser-driven end-to-end tests against the live PostgreSQL backend:
-```powershell
+```bash
 cd frontend
 npx playwright test
 ```
@@ -419,7 +530,7 @@ Running 15 tests using 1 worker:
 
 ---
 
-## 📖 REST API & OpenAPI Specification
+## 📖 REST API Reference & OpenAPI Specification
 
 MedTrack exposes a fully documented, RFC 7807 compliant RESTful API:
 
@@ -428,18 +539,42 @@ MedTrack exposes a fully documented, RFC 7807 compliant RESTful API:
 
 ### Key Endpoint Groups
 
-| Method | Path | Summary | Description |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/v1/auth/login` | Authenticate | Returns Access JWT and sets HttpOnly Refresh Token |
-| `POST` | `/api/v1/inbound-receipts` | Receive Batch | Atomically books batch stock into storage bin (AC-01) |
-| `POST` | `/api/v1/stock-transfers` | Request Transfer | Creates inter-warehouse transfer intent |
-| `POST` | `/api/v1/stock-transfers/{id}/allocate` | FEFO Allocation | Automatically reserves earliest-expiring inventory |
-| `POST` | `/api/v1/shipments` | Create Shipment | Binds allocated batches to transport manifest |
-| `POST` | `/api/v1/shipments/{id}/dispatch` | Dispatch | Debits source warehouse; transitions stock to In Transit |
-| `POST` | `/api/v1/shipments/{id}/receive` | Receive Stock | Credits destination warehouse; finalizes transfer |
-| `GET` | `/api/v1/barcodes/qr/{batchId}` | Generate QR Code | GS1 2D QR Code image with dosage & shelf-life metadata |
-| `GET` | `/api/v1/reports/inventory` | Inventory CSV | Streams real-time physical balance ledger in CSV format |
-| `GET` | `/api/v1/reports/expiry/data` | Near Expiry Risk | Returns batches nearing expiry window ($30\text{d} / 90\text{d}$) |
+| Method | Path | Summary | Minimum Role | Expected Status |
+| :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/api/v1/auth/login` | Authenticate & Issue JWT | Anonymous | `200 OK` |
+| `POST` | `/api/v1/auth/refresh` | Rotate Single-Use Refresh Token | Authenticated | `200 OK` |
+| `GET` | `/api/v1/medicines` | Query Medicine Catalog | `AUDITOR` | `200 OK` |
+| `POST` | `/api/v1/inbound-receipts` | Receive Batch at Dock (AC-01) | `CENTRAL_WH_MGR` | `201 Created` / `422` |
+| `POST` | `/api/v1/stock-transfers` | Request Stock Transfer | `STORE_MGR` | `201 Created` |
+| `POST` | `/api/v1/stock-transfers/{id}/allocate` | Run Automated FEFO Allocation | `CENTRAL_WH_MGR` | `200 OK` |
+| `POST` | `/api/v1/shipments` | Create Shipment Manifest | `CENTRAL_WH_MGR` | `201 Created` |
+| `POST` | `/api/v1/shipments/{id}/dispatch` | Dispatch Stock to In-Transit | `CENTRAL_WH_MGR` | `200 OK` |
+| `POST` | `/api/v1/shipments/{id}/milestones` | Log Telemetry Milestone | `LOGISTICS` | `201 Created` |
+| `POST` | `/api/v1/shipments/{id}/receive` | Receive & Credit Stock (AC-04)| `STORE_MGR` | `200 OK` / `409` |
+| `GET` | `/api/v1/barcodes/qr/{batchId}` | Generate GS1 2D QR Code | `STORE_MGR` | `200 OK (image/png)`|
+| `GET` | `/api/v1/reports/inventory` | Stream Inventory Balance CSV | `AUDITOR` | `200 OK (text/csv)` |
+| `GET` | `/api/v1/reports/expiry/data` | Query Near-Expiry Risk Table | `AUDITOR` | `200 OK` |
+| `GET` | `/api/v1/audit/logs` | Inspect Immutable Audit Trail | `AUDITOR` | `200 OK` |
+
+---
+
+## 🏷️ Optical Barcodes & GS1 Labeling
+
+MedTrack integrates local JVM-level barcode generation (`com.google.zxing:core`) with in-browser camera scanning:
+
+* **2D QR Code Standard**: GS1 Digital Structure `MEDTRACK:{BATCH_UUID}:{MED_CODE}:{EXPIRY_DATE}`
+* **1D Barcode Standard**: Code-128 compliant format for shelf bin location identification (`BIN-A01-04`).
+* **Webcam Scanner**: In-browser client scanning via HTML5 Video Stream with instant UUID extraction and direct record routing.
+
+---
+
+## ❄️ Cold-Chain & Telemetry Tracking
+
+MedTrack provides built-in logistics tracking for sensitive medications:
+
+* **Real-time Waypoint Progression**: Simulated deterministic GPS waypoints between central distribution centers and regional clinics.
+* **Cold-Chain Temperature Monitoring**: Pre-configured alert thresholds (`2°C - 8°C` for refrigerated vaccines/insulin).
+* **Automatic Delay Alarms**: Triggers warning notifications if a transit vehicle exceeds estimated milestone arrival windows.
 
 ---
 
@@ -454,23 +589,25 @@ MedTrack exposes a fully documented, RFC 7807 compliant RESTful API:
 
 ## ⚙️ Environment Variables Reference
 
-| Variable | Default Value | Description |
-| :--- | :--- | :--- |
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/medtrack` | PostgreSQL JDBC connection string |
-| `SPRING_DATASOURCE_USERNAME` | `medtrack` | PostgreSQL database user |
-| `SPRING_DATASOURCE_PASSWORD` | `medtrack` | PostgreSQL database password |
-| `MEDTRACK_JWT_SECRET` | `404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970` | 256-bit secret key for HMAC-SHA signing |
-| `MEDTRACK_JWT_EXPIRATION_MS` | `900000` (15 minutes) | JWT Access Token time-to-live |
-| `VITE_API_BASE_URL` | `http://localhost:8080/api/v1` | Backend API URL for Vite frontend |
+| Variable | Default Value | Production Recommendation | Description |
+| :--- | :--- | :--- | :--- |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/medtrack` | Managed PostgreSQL URL | Database connection string |
+| `SPRING_DATASOURCE_USERNAME` | `medtrack` | Dedicated DB user | Database user credentials |
+| `SPRING_DATASOURCE_PASSWORD` | `medtrack` | Secret manager reference | Database password |
+| `MEDTRACK_JWT_SECRET` | `404E635266...` (512-bit default) | 64+ char random hex string | HMAC-SHA512 token signing key |
+| `MEDTRACK_JWT_EXPIRATION_MS` | `900000` (15 minutes) | `900000` (15 minutes) | Access token expiration |
+| `FRONTEND_PORT` | `80` | `80` or `443` | Reverse proxy exposed port |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost` | Strict production domain | Allowed CORS origins |
 
 ---
 
 ## 🔒 Security & Regulatory Compliance
 
-* **Stateless Token RTR**: JWT access tokens have a short lifespan (15 minutes) paired with Single-Use Refresh Token Rotation (RTR). Replaying an old refresh token automatically invalidates the entire token family.
+* **Stateless Token RTR**: Short-lived access tokens (15 minutes) with Single-Use Refresh Token Rotation (RTR). Replaying an old token immediately revokes the entire token family.
 * **Cryptographic Non-Repudiation**: Sensitive journal entries and audit trails generate immutable SHA-256 integrity checksums.
 * **Zero Negative Balance Invariant**: Guaranteed through atomic database constraints and double-entry debit/credit verification.
-* **Idempotency Locking**: Protects all mutation endpoints against concurrent duplicate execution.
+* **Idempotency Locking**: Protects all mutation endpoints against concurrent duplicate execution via `Idempotency-Key` headers.
+* **GxP & FDA 21 CFR Part 11 Readiness**: Comprehensive immutable transaction audit logging, role separation, and signature non-repudiation.
 
 ---
 
@@ -478,10 +615,10 @@ MedTrack exposes a fully documented, RFC 7807 compliant RESTful API:
 
 MedTrack is released under the [MIT License](LICENSE).
 
-For technical questions, bug reports, or architecture inquiries, please open an issue in this repository.
+For technical questions, bug reports, or architecture inquiries, please open an issue in the [snmallick2401/MedTrack](https://github.com/snmallick2401/MedTrack) repository.
 
 ---
 
 <div align="center">
-  <sub>Built with ❤️ for resilient healthcare logistics and pharmaceutical inventory integrity.</sub>
+  <sub>Built with ❤️ for resilient healthcare logistics, cold-chain assurance, and pharmaceutical inventory integrity.</sub>
 </div>
