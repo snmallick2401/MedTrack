@@ -1,4 +1,4 @@
-﻿services:
+services:
   # Spring Boot 4.1.1 Backend Web Service
   - type: web
     name: medtrack-backend
@@ -9,15 +9,23 @@
     plan: free
     healthCheckPath: /actuator/health
     envVars:
-      - key: DATABASE_URL
+      - key: DB_HOST
         fromDatabase:
           name: medtrack-postgres
-          property: connectionString
-      - key: SPRING_DATASOURCE_USERNAME
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: medtrack-postgres
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: medtrack-postgres
+          property: database
+      - key: DB_USERNAME
         fromDatabase:
           name: medtrack-postgres
           property: user
-      - key: SPRING_DATASOURCE_PASSWORD
+      - key: DB_PASSWORD
         fromDatabase:
           name: medtrack-postgres
           property: password
