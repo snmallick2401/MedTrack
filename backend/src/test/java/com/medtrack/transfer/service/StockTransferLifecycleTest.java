@@ -88,7 +88,7 @@ class StockTransferLifecycleTest {
             supplierRepository.save(new Supplier("PharmaCorp Global", "SUP-PHARMA-01", "orders@pharmacorp.local", "+1-555-0199", "100 Pharma Blvd, Boston, MA"))
         );
         category = categoryRepository.findAll().stream().findFirst().orElseGet(() ->
-            categoryRepository.save(new MedicineCategory("ANTIBIOTIC", "Antibiotic", "Antibiotic medications"))
+            categoryRepository.save(new MedicineCategory("ANTIBIOTIC", "Antibiotic"))
         );
     }
 
