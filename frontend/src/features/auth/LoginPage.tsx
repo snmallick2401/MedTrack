@@ -84,7 +84,7 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex min-h-10 w-full items-center justify-center rounded bg-ink px-4 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="btn-primary w-full text-sm font-semibold disabled:opacity-50"
         >
           {loading ? "Signing in…" : "Sign in"}
         </button>
