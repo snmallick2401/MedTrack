@@ -47,9 +47,30 @@ ON CONFLICT (warehouse_id, batch_id) DO NOTHING;
 
 -- 5. Stock Transfers (1 Dispatched in-flight, 1 Requested)
 INSERT INTO stock_transfers (id, transfer_number, source_warehouse_id, destination_warehouse_id, status, requested_by, approved_by, notes)
-VALUES
-  ('80000000-0000-0000-0000-000000000001', 'TR-2026-00101', '20000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000002', 'DISPATCHED', '00000000-0000-0000-0000-000000000013', '00000000-0000-0000-0000-000000000012', 'Monthly regional pharmacy dispensary replenishment.'),
-  ('80000000-0000-0000-0000-000000000002', 'TR-2026-00102', '20000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000002', 'REQUESTED', '00000000-0000-0000-0000-000000000013', NULL, 'Urgent winter antibiotic restock requisition.')
+SELECT
+  '80000000-0000-0000-0000-000000000001',
+  'TR-2026-00101',
+  '20000000-0000-0000-0000-000000000001',
+  '20000000-0000-0000-0000-000000000002',
+  'DISPATCHED',
+  u_req.id,
+  u_app.id,
+  'Monthly regional pharmacy dispensary replenishment.'
+FROM (SELECT id FROM users WHERE email IN ('store@medtrack.local', 'admin@medtrack.local') ORDER BY created_at LIMIT 1) u_req
+CROSS JOIN (SELECT id FROM users WHERE email IN ('warehouse@medtrack.local', 'admin@medtrack.local') ORDER BY created_at LIMIT 1) u_app
+ON CONFLICT (transfer_number) DO NOTHING;
+
+INSERT INTO stock_transfers (id, transfer_number, source_warehouse_id, destination_warehouse_id, status, requested_by, approved_by, notes)
+SELECT
+  '80000000-0000-0000-0000-000000000002',
+  'TR-2026-00102',
+  '20000000-0000-0000-0000-000000000001',
+  '20000000-0000-0000-0000-000000000002',
+  'REQUESTED',
+  u_req.id,
+  NULL,
+  'Urgent winter antibiotic restock requisition.'
+FROM (SELECT id FROM users WHERE email IN ('store@medtrack.local', 'admin@medtrack.local') ORDER BY created_at LIMIT 1) u_req
 ON CONFLICT (transfer_number) DO NOTHING;
 
 INSERT INTO stock_transfer_items (id, transfer_id, medicine_id, batch_id, requested_quantity, allocated_quantity, picked_quantity, dispatched_quantity, received_quantity)
@@ -71,14 +92,56 @@ ON CONFLICT (shipment_id, transfer_item_id) DO NOTHING;
 
 -- GPS Telemetry Waypoints
 INSERT INTO tracking_events (id, shipment_id, milestone_status, location_name, latitude, longitude, remarks, event_timestamp, created_by)
-VALUES
-  ('92000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001', 'DEPARTED_DEPOT', 'Boston Central Logistics Hub', 42.360100, -71.058900, 'Pallets loaded in Reefer Unit 4. Temp verified at 3.8°C.', now() - INTERVAL '1 hour 45 minutes', '00000000-0000-0000-0000-000000000014'),
-  ('92000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000001', 'IN_TRANSIT', 'I-90 Highway Mile Marker 42', 42.271100, -71.417800, 'Vehicle in motion. GPS signal steady, cargo temp stable.', now() - INTERVAL '30 minutes', '00000000-0000-0000-0000-000000000014')
+SELECT
+  '92000000-0000-0000-0000-000000000001',
+  '90000000-0000-0000-0000-000000000001',
+  'DEPARTED_DEPOT',
+  'Boston Central Logistics Hub',
+  42.360100,
+  -71.058900,
+  'Pallets loaded in Reefer Unit 4. Temp verified at 3.8°C.',
+  now() - INTERVAL '1 hour 45 minutes',
+  u.id
+FROM (SELECT id FROM users ORDER BY created_at LIMIT 1) u
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO tracking_events (id, shipment_id, milestone_status, location_name, latitude, longitude, remarks, event_timestamp, created_by)
+SELECT
+  '92000000-0000-0000-0000-000000000002',
+  '90000000-0000-0000-0000-000000000001',
+  'IN_TRANSIT',
+  'I-90 Highway Mile Marker 42',
+  42.271100,
+  -71.417800,
+  'Vehicle in motion. GPS signal steady, cargo temp stable.',
+  now() - INTERVAL '30 minutes',
+  u.id
+FROM (SELECT id FROM users ORDER BY created_at LIMIT 1) u
 ON CONFLICT (id) DO NOTHING;
 
 -- 7. Operational Notifications & Alerts
 INSERT INTO notifications (id, user_id, warehouse_id, type, title, message, entity_type, entity_id)
-VALUES
-  ('93000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'NEAR_EXPIRY', 'Batch Approaching 45-Day Expiry Window', 'Paracetamol 650mg (Batch BAT-PAR-2026-02) expires in 45 days. Prioritize FEFO allocation.', 'BATCH', '60000000-0000-0000-0000-000000000002'),
-  ('93000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'TRANSFER_DISPATCHED', 'Inter-Facility Transfer TR-2026-00101 In Transit', 'Shipment SH-2026-00091 departed Central Warehouse for Distribution Store North.', 'SHIPMENT', '90000000-0000-0000-0000-000000000001')
+SELECT
+  '93000000-0000-0000-0000-000000000001',
+  u.id,
+  '20000000-0000-0000-0000-000000000001',
+  'NEAR_EXPIRY',
+  'Batch Approaching 45-Day Expiry Window',
+  'Paracetamol 650mg (Batch BAT-PAR-2026-02) expires in 45 days. Prioritize FEFO allocation.',
+  'BATCH',
+  '60000000-0000-0000-0000-000000000002'
+FROM (SELECT id FROM users ORDER BY created_at LIMIT 1) u
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO notifications (id, user_id, warehouse_id, type, title, message, entity_type, entity_id)
+SELECT
+  '93000000-0000-0000-0000-000000000002',
+  u.id,
+  '20000000-0000-0000-0000-000000000001',
+  'TRANSFER_DISPATCHED',
+  'Inter-Facility Transfer TR-2026-00101 In Transit',
+  'Shipment SH-2026-00091 departed Central Warehouse for Distribution Store North.',
+  'SHIPMENT',
+  '90000000-0000-0000-0000-000000000001'
+FROM (SELECT id FROM users ORDER BY created_at LIMIT 1) u
 ON CONFLICT (id) DO NOTHING;
