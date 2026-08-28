@@ -4,6 +4,11 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:${DATABASE_URL:${DB_URL:postgresql://localhost:5432/medtrack}}}
     username: ${SPRING_DATASOURCE_USERNAME:${DB_USERNAME:medtrack}}
     password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:medtrack}}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:4}
+      minimum-idle: ${DB_POOL_MIN:1}
+      idle-timeout: 30000
+      max-lifetime: 60000
   jpa:
     hibernate.ddl-auto: validate
     open-in-view: false
