@@ -22,7 +22,7 @@
   Featuring double-entry ledger accounting, automated FEFO allocation, minimum shelf-life enforcement, 2D QR / Code-128 labeling, in-browser optical scanning, real-time transportation telemetry, and cryptographic audit trails.
 </p>
 
-[Explore Documentation](docs/prd.md) • [System Architecture](docs/architecture.md) • [API Specification](docs/api/openapi.yaml) • [Getting Started](#-getting-started) • [Personas & Logins](#-pre-seeded-roles--personas)
+[System Architecture](docs/architecture.md) • [API Specification](docs/api/openapi.yaml) • [Database Schema](docs/database/erd.md) • [Getting Started](#-getting-started) • [Personas & Logins](#-pre-seeded-roles--personas)
 
 </div>
 
@@ -368,11 +368,10 @@ MedTrack/
 │   └── vite.config.ts
 │
 ├── docs/                                 # Full Architectural Documentation
-│   ├── prd.md                            # Product Requirements Document
 │   ├── architecture.md                   # System Architecture & C4 Models
-│   ├── design.md                         # Design System & Token Specifications
-│   ├── rules.md                          # Engineering Invariants & Coding Rules
-│   └── roadmap.md                        # Implementation Roadmap & Phased Execution Plan
+│   ├── api/openapi.yaml                  # OpenAPI 3.1 REST API Contract
+│   ├── database/erd.md                   # Database Entity-Relationship Diagram (ERD)
+│   └── decisions/ADR-001...              # Architecture Decision Records
 │
 ├── infra/                                # Infrastructure & Containerization
 │   └── docker-compose.yml                # Multi-container orchestration

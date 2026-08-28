@@ -744,10 +744,7 @@ MedTrack/
 │
 ├── docs/                                 # Full Architectural Documentation
 │   ├── architecture.md                   # System Architecture & C4 Models
-│   ├── prd.md                            # Product Requirements Document
-│   ├── roadmap.md                        # Implementation Roadmap & Phased Execution Plan
-│   ├── design.md                         # Design System & Token Specifications
-│   ├── rules.md                          # Engineering Invariants & Coding Rules
+│   ├── api/openapi.yaml                  # OpenAPI 3.1 REST API Specification
 │   ├── database/erd.md                   # Visual Schema ERD & Table DDL
 │   └── decisions/ADR-001...              # Architecture Decision Records
 │
