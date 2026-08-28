@@ -5,6 +5,11 @@ frontend/node_modules/
 frontend/.turbo/
 frontend/test-results/
 frontend/playwright-report/
+*.tsbuildinfo
+*.bak
+*.tmp
+frontend/vite.config.js
+frontend/vite.config.d.ts
 
 # Environment Variables & Secrets
 .env
@@ -30,3 +35,4 @@ desktop.ini
 
 # Logs & Temporary Files
 *.log
+
