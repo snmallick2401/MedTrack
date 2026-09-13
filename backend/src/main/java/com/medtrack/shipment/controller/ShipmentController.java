@@ -21,16 +21,17 @@ public class ShipmentController {
     @GetMapping("/shipments")
     @PreAuthorize("isAuthenticated()")
     public org.springframework.data.domain.Page<ShipmentResponse> list(
+        @AuthenticationPrincipal String user,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size
     ) {
-        return service.list(org.springframework.data.domain.PageRequest.of(page, Math.min(Math.max(1, size), 100), org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt")));
+        return service.list(UUID.fromString(user), org.springframework.data.domain.PageRequest.of(page, Math.min(Math.max(1, size), 100), org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt")));
     }
 
     @GetMapping("/shipments/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ShipmentResponse get(@PathVariable UUID id) {
-        return service.get(id);
+    public ShipmentResponse get(@AuthenticationPrincipal String user, @PathVariable UUID id) {
+        return service.get(UUID.fromString(user), id);
     }
 
     @PostMapping("/shipments")

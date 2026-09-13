@@ -23,16 +23,17 @@ public class TransferController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public Page<TransferResponse> list(
+        @AuthenticationPrincipal String user,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size
     ) {
-        return service.list(PageRequest.of(page, Math.min(Math.max(1, size), 100), Sort.by(Sort.Direction.DESC, "createdAt")));
+        return service.list(UUID.fromString(user), PageRequest.of(page, Math.min(Math.max(1, size), 100), Sort.by(Sort.Direction.DESC, "createdAt")));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    public TransferResponse get(@PathVariable UUID id) {
-        return service.get(id);
+    public TransferResponse get(@AuthenticationPrincipal String user, @PathVariable UUID id) {
+        return service.get(UUID.fromString(user), id);
     }
 
     @PostMapping
@@ -47,8 +48,12 @@ public class TransferController {
 
     @PostMapping("/{id}/approve")
     @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('CENTRAL_WAREHOUSE_MANAGER')")
-    public TransferResponse approve(@AuthenticationPrincipal String user, @PathVariable UUID id) {
-        return service.approve(UUID.fromString(user), id);
+    public TransferResponse approve(
+        @AuthenticationPrincipal String user,
+        @PathVariable UUID id,
+        @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey
+    ) {
+        return service.approve(UUID.fromString(user), id, idempotencyKey);
     }
 
     @PostMapping("/{id}/allocate")
@@ -69,8 +74,12 @@ public class TransferController {
 
     @PostMapping("/{id}/pack")
     @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('CENTRAL_WAREHOUSE_MANAGER')")
-    public TransferResponse pack(@PathVariable UUID id) {
-        return service.pack(id);
+    public TransferResponse pack(
+        @AuthenticationPrincipal String user,
+        @PathVariable UUID id,
+        @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey
+    ) {
+        return service.pack(UUID.fromString(user), id, idempotencyKey);
     }
 
     @PostMapping("/{id}/cancel")

@@ -33,6 +33,7 @@ public class TransferService {
     private final ShipmentRepository shipments;
     private final IdempotencyService idempotency;
     private final EntityManager em;
+    private final TransferAuthorizationService transferAuth;
 
     public TransferService(
         StockTransferRepository t,
@@ -43,7 +44,8 @@ public class TransferService {
         InventoryMovementService i,
         ShipmentRepository s,
         IdempotencyService idemp,
-        EntityManager e
+        EntityManager e,
+        TransferAuthorizationService auth
     ) {
         transfers = t;
         medicines = m;
@@ -54,6 +56,7 @@ public class TransferService {
         shipments = s;
         idempotency = idemp;
         em = e;
+        transferAuth = auth;
     }
 
     @Transactional
@@ -85,20 +88,31 @@ public class TransferService {
     }
 
     @Transactional
+    public TransferResponse approve(UUID actorId, UUID id, String idempotencyKey) {
+        return idempotency.execute(actorId, idempotencyKey, "/api/v1/stock-transfers/" + id + "/approve", null, TransferResponse.class, () -> {
+            User actor = user(actorId);
+            StockTransfer t = lock(id);
+            transferAuth.assertCanApproveTransfer(actor, t);
+            if (t.getStatus() == TransferStatus.APPROVED) {
+                return TransferResponse.of(t);
+            }
+            t.approve(actor);
+            return TransferResponse.of(t);
+        });
+    }
+
+    @Transactional
     public TransferResponse approve(UUID actorId, UUID id) {
-        StockTransfer t = lock(id);
-        String role = user(actorId).getRole().getName();
-        if (!"SUPER_ADMIN".equals(role) && !"CENTRAL_WAREHOUSE_MANAGER".equals(role)) {
-            throw new ConflictException("TRANSFER_APPROVAL_NOT_ALLOWED", "User cannot approve transfers");
-        }
-        t.approve(user(actorId));
-        return TransferResponse.of(t);
+        return approve(actorId, id, null);
     }
 
     @Transactional
     public TransferResponse allocate(UUID actorId, UUID id, String idempotencyKey) {
         return idempotency.execute(actorId, idempotencyKey, "/api/v1/stock-transfers/" + id + "/allocate", null, TransferResponse.class, () -> {
+            User actor = user(actorId);
             StockTransfer t = lock(id);
+            transferAuth.assertCanAllocateTransfer(actor, t);
+
             if (t.getStatus() == TransferStatus.ALLOCATED) {
                 return TransferResponse.of(t);
             }
@@ -116,7 +130,9 @@ public class TransferService {
 
     @Transactional
     public TransferResponse pick(UUID actorId, UUID id, PickRequest r) {
+        User actor = user(actorId);
         StockTransfer t = lock(id);
+        transferAuth.assertCanPickTransfer(actor, t);
         t.transition(TransferStatus.PICKED);
         for (PickRequest.Item item : r.items()) {
             StockTransferItem match = t.getItems().stream().filter(i -> i.getBatch() != null && i.getBatch().getId().equals(item.batchId())).findFirst().orElseThrow(() -> new DomainException("UNALLOCATED_BATCH", "Picked batch was not allocated"));
@@ -133,21 +149,30 @@ public class TransferService {
     }
 
     @Transactional
-    public TransferResponse pack(UUID id) {
-        StockTransfer t = lock(id);
-        t.transition(TransferStatus.PACKED);
-        return TransferResponse.of(t);
+    public TransferResponse pack(UUID actorId, UUID id, String idempotencyKey) {
+        return idempotency.execute(actorId, idempotencyKey, "/api/v1/stock-transfers/" + id + "/pack", null, TransferResponse.class, () -> {
+            User actor = user(actorId);
+            StockTransfer t = lock(id);
+            transferAuth.assertCanPackTransfer(actor, t);
+            if (t.getStatus() == TransferStatus.PACKED) {
+                return TransferResponse.of(t);
+            }
+            t.transition(TransferStatus.PACKED);
+            return TransferResponse.of(t);
+        });
+    }
+
+    @Transactional
+    public TransferResponse pack(UUID actorId, UUID id) {
+        return pack(actorId, id, null);
     }
 
     @Transactional
     public TransferResponse cancel(UUID actorId, UUID id, String reason, String idempotencyKey) {
         return idempotency.execute(actorId, idempotencyKey, "/api/v1/stock-transfers/" + id + "/cancel", reason != null ? Map.of("reason", reason) : null, TransferResponse.class, () -> {
-            StockTransfer t = lock(id);
             User actor = user(actorId);
-            String role = actor.getRole().getName();
-            if (!"SUPER_ADMIN".equals(role) && !"CENTRAL_WAREHOUSE_MANAGER".equals(role) && !t.getRequestedBy().getId().equals(actor.getId())) {
-                throw new ConflictException("TRANSFER_CANCEL_NOT_ALLOWED", "User cannot cancel this transfer");
-            }
+            StockTransfer t = lock(id);
+            transferAuth.assertCanCancelTransfer(actor, t);
             TransferStatus currentStatus = t.getStatus();
             if (currentStatus == TransferStatus.DISPATCHED || currentStatus == TransferStatus.RECEIVED || currentStatus == TransferStatus.COMPLETED) {
                 throw new ConflictException("CANNOT_CANCEL_DISPATCHED_TRANSFER", "Cannot cancel transfer in status " + currentStatus);
@@ -181,8 +206,29 @@ public class TransferService {
 
 
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<TransferResponse> list(UUID actorId, org.springframework.data.domain.Pageable pageable) {
+        User actor = user(actorId);
+        if (transferAuth.isGlobalVisibilityRole(actor)) {
+            return transfers.findAll(pageable).map(TransferResponse::of);
+        }
+        Optional<UUID> warehouseIdOpt = transferAuth.getAuthorizedWarehouseScope(actor);
+        if (warehouseIdOpt.isEmpty()) {
+            return new org.springframework.data.domain.PageImpl<>(List.of(), pageable, 0);
+        }
+        return transfers.findByWarehouse(warehouseIdOpt.get(), pageable).map(TransferResponse::of);
+    }
+
+    @Transactional(readOnly = true)
     public org.springframework.data.domain.Page<TransferResponse> list(org.springframework.data.domain.Pageable pageable) {
         return transfers.findAll(pageable).map(TransferResponse::of);
+    }
+
+    @Transactional(readOnly = true)
+    public TransferResponse get(UUID actorId, UUID id) {
+        User actor = user(actorId);
+        StockTransfer t = transfers.findById(id).orElseThrow(() -> new NotFoundException("Stock transfer"));
+        transferAuth.assertCanViewTransfer(actor, t);
+        return TransferResponse.of(t);
     }
 
     @Transactional(readOnly = true)

@@ -1,0 +1,18 @@
+spring:
+  application.name: medtrack-test
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:medtrack}
+    username: ${DB_USERNAME:medtrack}
+    password: ${DB_PASSWORD:medtrack}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+medtrack:
+  cookie.secure: false
+  jwt:
+    # Dedicated non-production test secret (64+ bytes for HS512 testing)
+    secret: 9999999999999999999999999999999999999999999999999999999999999999_TEST_ONLY_SECRET
+    access-token-minutes: 15
+    refresh-token-days: 7
+  cors.allowed-origins: http://localhost:5173,http://localhost

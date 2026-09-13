@@ -27,6 +27,7 @@ public class ShipmentService {
     private final InventoryMovementService inventory;
     private final IdempotencyService idempotency;
     private final EntityManager em;
+    private final ShipmentAuthorizationService authorizationService;
 
     public ShipmentService(
         ShipmentRepository s,
@@ -35,7 +36,8 @@ public class ShipmentService {
         StorageLocationRepository l,
         InventoryMovementService i,
         IdempotencyService idemp,
-        EntityManager e
+        EntityManager e,
+        ShipmentAuthorizationService auth
     ) {
         shipments = s;
         transfers = t;
@@ -44,6 +46,7 @@ public class ShipmentService {
         inventory = i;
         idempotency = idemp;
         em = e;
+        authorizationService = auth;
     }
 
     @Transactional
@@ -67,7 +70,10 @@ public class ShipmentService {
     @Transactional
     public ShipmentResponse dispatch(UUID actorId, UUID transferId, String idempotencyKey) {
         return idempotency.execute(actorId, idempotencyKey, "/api/v1/stock-transfers/" + transferId + "/dispatch", null, ShipmentResponse.class, () -> {
+            User actor = user(actorId);
             StockTransfer t = lockTransfer(transferId);
+            authorizationService.assertCanDispatchTransfer(actor, t);
+
             Shipment s = shipments.lockByTransferId(transferId).orElseThrow(() -> new NotFoundException("Shipment"));
             if (s.getStatus() == ShipmentStatus.DISPATCHED || t.getStatus() == TransferStatus.DISPATCHED) {
                 return ShipmentResponse.of(s);
@@ -83,7 +89,7 @@ public class ShipmentService {
                     a.add(new InventoryMovementService.Allocation(i.getBatch().getId(), i.getDispatchedQuantity(), t.getSourceWarehouse()));
                 }
             }
-            inventory.dispatch(user(actorId), t.getId(), a);
+            inventory.dispatch(actor, t.getId(), a);
             s.dispatch();
             return ShipmentResponse.of(s);
         });
@@ -92,7 +98,10 @@ public class ShipmentService {
     @Transactional
     public Map<String, String> receive(UUID actorId, UUID transferId, ReceiveRequest r, String idempotencyKey) {
         return idempotency.execute(actorId, idempotencyKey, "/api/v1/stock-transfers/" + transferId + "/receive", r, Map.class, () -> {
+            User actor = user(actorId);
             StockTransfer t = lockTransfer(transferId);
+            authorizationService.assertCanReceiveTransfer(actor, t);
+
             Shipment s = shipments.lockByTransferId(transferId).orElseThrow(() -> new NotFoundException("Shipment"));
             if (s.getStatus() == ShipmentStatus.DELIVERED || t.getStatus() == TransferStatus.RECEIVED || t.getStatus() == TransferStatus.COMPLETED || t.getStatus() == TransferStatus.DISCREPANCY_FLAGGED) {
                 throw new ConflictException("SHIPMENT_ALREADY_RECEIVED", "Shipment has already been received");
@@ -119,7 +128,7 @@ public class ShipmentService {
             if (t.getItems().stream().filter(i -> i.getBatch() != null).anyMatch(i -> i.getReceivedQuantity() + i.getDamagedQuantity() != i.getDispatchedQuantity())) {
                 throw new DomainException("INCOMPLETE_RECEIPT", "Each dispatched batch requires reconciliation");
             }
-            inventory.receive(user(actorId), t.getId(), t.getDestinationWarehouse(), location, receipts);
+            inventory.receive(actor, t.getId(), t.getDestinationWarehouse(), location, receipts);
             s.deliver();
             t.transition(TransferStatus.RECEIVED);
             if (discrepancy) t.transition(TransferStatus.DISCREPANCY_FLAGGED);
@@ -130,8 +139,29 @@ public class ShipmentService {
 
 
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<ShipmentResponse> list(UUID actorId, org.springframework.data.domain.Pageable pageable) {
+        User actor = user(actorId);
+        if (authorizationService.isGlobalVisibilityRole(actor)) {
+            return shipments.findAll(pageable).map(ShipmentResponse::of);
+        }
+        Optional<UUID> warehouseIdOpt = authorizationService.getAuthorizedWarehouseScope(actor);
+        if (warehouseIdOpt.isEmpty()) {
+            return new org.springframework.data.domain.PageImpl<>(List.of(), pageable, 0);
+        }
+        return shipments.findByWarehouse(warehouseIdOpt.get(), pageable).map(ShipmentResponse::of);
+    }
+
+    @Transactional(readOnly = true)
     public org.springframework.data.domain.Page<ShipmentResponse> list(org.springframework.data.domain.Pageable pageable) {
         return shipments.findAll(pageable).map(ShipmentResponse::of);
+    }
+
+    @Transactional(readOnly = true)
+    public ShipmentResponse get(UUID actorId, UUID id) {
+        User actor = user(actorId);
+        Shipment s = shipments.findById(id).orElseThrow(() -> new NotFoundException("Shipment"));
+        authorizationService.assertCanViewShipment(actor, s);
+        return ShipmentResponse.of(s);
     }
 
     @Transactional(readOnly = true)

@@ -44,7 +44,7 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/medtrack
           SPRING_DATASOURCE_USERNAME: medtrack
           SPRING_DATASOURCE_PASSWORD: medtrack
-          MEDTRACK_JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+          MEDTRACK_JWT_SECRET: ${{ secrets.MEDTRACK_JWT_SECRET || 'ci-runner-test-secret-at-least-64-bytes-long-for-github-actions-execution-only' }}
 
   frontend-build-test:
     name: Frontend Build & Test (React 19 + Vite)

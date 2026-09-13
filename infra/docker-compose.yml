@@ -1,4 +1,4 @@
-﻿services:
+services:
   postgres:
     image: postgres:18-alpine
     container_name: medtrack-postgres
@@ -32,7 +32,7 @@
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-medtrack}
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
       SPRING_FLYWAY_ENABLED: "true"
-      MEDTRACK_JWT_SECRET: ${MEDTRACK_JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      MEDTRACK_JWT_SECRET: ${MEDTRACK_JWT_SECRET:?MEDTRACK_JWT_SECRET environment variable must be set}
       MEDTRACK_JWT_EXPIRATION_MS: ${MEDTRACK_JWT_EXPIRATION_MS:-900000}
     ports:
       - "8080:8080"

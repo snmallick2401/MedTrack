@@ -10,7 +10,9 @@ import { errorMessage } from "../../utils/errors";
 import type { InventoryBalance } from "../../types/api";
 
 export function InventoryPage() {
+  const user = useUiStore(s => s.user);
   const assignedWarehouseId = useUiStore(s => s.warehouseId);
+  const isFacilityScoped = user?.role === "STORE_MANAGER" || user?.role === "CENTRAL_WAREHOUSE_MANAGER";
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(assignedWarehouseId ?? "");
 
   const warehousesQuery = useQuery({
@@ -19,11 +21,13 @@ export function InventoryPage() {
   });
 
   useEffect(() => {
-    if (!selectedWarehouseId && warehousesQuery.data?.content.length) {
+    if (isFacilityScoped && assignedWarehouseId) {
+      setSelectedWarehouseId(assignedWarehouseId);
+    } else if (!selectedWarehouseId && warehousesQuery.data?.content.length) {
       const active = warehousesQuery.data.content.find(w => w.status === "ACTIVE") ?? warehousesQuery.data.content[0];
       setSelectedWarehouseId(active.id);
     }
-  }, [warehousesQuery.data, selectedWarehouseId]);
+  }, [warehousesQuery.data, selectedWarehouseId, isFacilityScoped, assignedWarehouseId]);
 
   const balancesQuery = useQuery({
     queryKey: ["balances", selectedWarehouseId],
@@ -45,13 +49,17 @@ export function InventoryPage() {
             id="warehouse-selector"
             value={selectedWarehouseId}
             onChange={e => setSelectedWarehouseId(e.target.value)}
-            className="input min-w-[200px]"
+            disabled={isFacilityScoped}
+            className={`input min-w-[200px] ${isFacilityScoped ? "bg-slate-100 cursor-not-allowed opacity-80" : ""}`}
+            title={isFacilityScoped ? "Warehouse selection is fixed to your assigned facility" : "Select warehouse"}
           >
-            {warehousesQuery.data?.content.map(w => (
-              <option key={w.id} value={w.id}>
-                {w.code} — {w.name}
-              </option>
-            ))}
+            {warehousesQuery.data?.content
+              ?.filter(w => !isFacilityScoped || w.id === assignedWarehouseId)
+              .map(w => (
+                <option key={w.id} value={w.id}>
+                  {w.code} — {w.name}
+                </option>
+              ))}
           </select>
         </div>
       </div>

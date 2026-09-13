@@ -615,7 +615,7 @@ MedTrack provides built-in logistics tracking for sensitive medications:
 | `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/medtrack` | Managed PostgreSQL URL | Database connection string |
 | `SPRING_DATASOURCE_USERNAME` | `medtrack` | Dedicated DB user | Database user credentials |
 | `SPRING_DATASOURCE_PASSWORD` | `medtrack` | Secret manager reference | Database password |
-| `MEDTRACK_JWT_SECRET` | `404E635266...` (512-bit default) | 64+ char random hex string | HMAC-SHA512 token signing key |
+| `MEDTRACK_JWT_SECRET` | *None* (Mandatory / Fail-Closed) | 64+ char random hex string (512-bit) | HMAC-SHA512 token signing key |
 | `MEDTRACK_JWT_EXPIRATION_MS` | `900000` (15 minutes) | `900000` (15 minutes) | Access token expiration |
 | `FRONTEND_PORT` | `80` | `80` or `443` | Reverse proxy exposed port |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost` | Strict production domain | Allowed CORS origins |

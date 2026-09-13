@@ -134,7 +134,7 @@ class StockTransferLifecycleTest {
         assertEquals("PICKED", transfer.status());
 
         // 6. Pack Stock
-        transfer = transferService.pack(transfer.id());
+        transfer = transferService.pack(superAdmin.getId(), transfer.id());
         assertEquals("PACKED", transfer.status());
 
         // 7. Create Shipment & verify ShipmentItem mapping
@@ -220,7 +220,7 @@ class StockTransferLifecycleTest {
         transfer = transferService.approve(superAdmin.getId(), transfer.id());
         transfer = transferService.allocate(superAdmin.getId(), transfer.id(), "IDEMP-ALLOC-" + testSuffix);
         transfer = transferService.pick(superAdmin.getId(), transfer.id(), new PickRequest(List.of(new PickRequest.Item(batchId, 50))));
-        transfer = transferService.pack(transfer.id());
+        transfer = transferService.pack(superAdmin.getId(), transfer.id());
 
         ShipmentRequest shipReq = new ShipmentRequest(transfer.id(), "Carrier", "TRK-CONC-" + testSuffix, "Driver", "+111", "V-1", Instant.now().plusSeconds(86400));
         shipmentService.create(shipReq);

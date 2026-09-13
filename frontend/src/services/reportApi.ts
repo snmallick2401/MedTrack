@@ -20,10 +20,10 @@ export interface ExpiryReportItem {
 }
 
 export const reportApi = {
-  inventory: () =>
-    api.get<Blob>("/reports/inventory", { responseType: "blob" }).then(r => r.data),
-  expiryCsv: (days = 90) =>
-    api.get<Blob>("/reports/expiry", { params: { days }, responseType: "blob" }).then(r => r.data),
-  expiryData: (days = 90) =>
-    api.get<ExpiryReportItem[]>("/reports/expiry/data", { params: { days } }).then(r => r.data)
+  inventory: (warehouseId?: string) =>
+    api.get<Blob>("/reports/inventory", { params: warehouseId ? { warehouseId } : {}, responseType: "blob" }).then(r => r.data),
+  expiryCsv: (days = 90, warehouseId?: string) =>
+    api.get<Blob>("/reports/expiry", { params: { days, ...(warehouseId ? { warehouseId } : {}) }, responseType: "blob" }).then(r => r.data),
+  expiryData: (days = 90, warehouseId?: string) =>
+    api.get<ExpiryReportItem[]>("/reports/expiry/data", { params: { days, ...(warehouseId ? { warehouseId } : {}) } }).then(r => r.data)
 };

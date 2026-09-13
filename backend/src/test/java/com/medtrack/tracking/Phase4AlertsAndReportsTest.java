@@ -168,7 +168,7 @@ class Phase4AlertsAndReportsTest {
         transferService.approve(superAdmin.getId(), trf.id());
         transferService.allocate(superAdmin.getId(), trf.id(), "IDEMP-ALLOC-" + testSuffix);
         transferService.pick(superAdmin.getId(), trf.id(), new PickRequest(List.of(new PickRequest.Item(batchId, 40))));
-        transferService.pack(trf.id());
+        transferService.pack(superAdmin.getId(), trf.id());
 
         // Create shipment with estimatedArrival in the past (2 hours ago)
         Instant pastEta = Instant.now().minusSeconds(7200);
